@@ -1,0 +1,138 @@
+/*INSERT INTO DIM_LOCATION*/
+USE Group3DW
+Go
+
+SET IDENTITY_INSERT DIM_LOCATION OFF
+
+INSERT INTO DIM_LOCATION
+	( City,Country,State )
+
+select Distinct City, Country,State
+From STAGE_ORDERS
+where Record_Location_Exists = 'N'
+
+
+
+/*INSERT INTO DIM_CUSTOMER*/
+USE Group3DW
+Go
+
+SET IDENTITY_INSERT DIM_CUSTOMER OFF
+
+INSERT INTO DIM_CUSTOMER
+	( Customer_ID,Customer_Name,Segment)
+
+select Distinct CustomerID,CustomerName,Segment
+From STAGE_ORDERS
+where Record_Customer_Exists = 'N'
+
+
+
+/*INSERT INTO DIM_ORDER*/
+USE Group3DW
+Go
+
+SET IDENTITY_INSERT DIM_ORDER OFF
+
+INSERT INTO DIM_ORDER
+	( Order_ID,Order_Priority,Ship_Mode,Ship_date,Order_date)
+
+select Distinct OrderID,OrderPriority,ShipMode,ShipDate,OrderDate
+From STAGE_ORDERS
+where Record_Order_Exists = 'N'
+
+
+/*INSERT INTO DIM_PRODUCT*/
+USE Group3DW
+Go
+
+SET IDENTITY_INSERT DIM_PRODUCT OFF
+
+INSERT INTO DIM_PRODUCT
+	( Product_ID,Product_name,Category,Sub_Category)
+
+select Distinct ProductID,ProductName,Category,Sub_Category
+From STAGE_ORDERS
+where Record_Product_Exists = 'N'
+
+
+
+
+/*Alter Table 1*/
+
+UPDATE    STAGE_ORDERS
+SET      C_WK  = C.C_WK
+FROM 
+STAGE_ORDERS S,  DIM_CUSTOMER C
+
+WHERE S.CustomerID = C.Customer_ID
+
+
+UPDATE    STAGE_ORDERS
+SET      Loc_WK  = L.Loc_wk
+FROM 
+STAGE_ORDERS S,  DIM_LOCATION L
+
+WHERE S.City = L.City
+
+UPDATE    STAGE_ORDERS
+SET      Prod_WK  = P.Product_wk
+FROM 
+STAGE_ORDERS S,  DIM_PRODUCT P
+
+WHERE S.ProductID = P.Product_ID
+
+
+UPDATE    STAGE_ORDERS
+SET      Order_WK  = O.Order_wk
+FROM 
+STAGE_ORDERS S,  DIM_ORDER O
+
+WHERE S.OrderID = O.Order_ID
+
+
+/*Alter Table 2*/
+
+USE Group3DW
+GO
+
+UPDATE STAGE_ORDERS
+SET
+    Record_Customer_Exists = 'Y'
+FROM STAGE_ORDERS S, DIM_CUSTOMER C
+WHERE 
+S.CustomerID = C.Customer_ID
+
+UPDATE STAGE_ORDERS
+SET
+    Record_Location_Exists = 'Y'
+FROM STAGE_ORDERS S, DIM_LOCATION L
+WHERE 
+S.City = L.City
+
+UPDATE STAGE_ORDERS
+SET
+    Record_Product_Exists = 'Y'
+FROM STAGE_ORDERS S, DIM_PRODUCT P
+WHERE 
+S.ProductID = P.Product_ID
+
+UPDATE STAGE_ORDERS
+SET
+    Record_Order_Exists = 'Y'
+FROM STAGE_ORDERS S, DIM_ORDER O
+WHERE 
+S.OrderID = O.Order_ID
+
+
+
+UPDATE   STAGE_ORDERS
+SET   Order_dt_wk = calendar_wk
+FROM   STAGE_ORDERS S, DIM_Calendar C
+WHERE   S.OrderDate = C.Calendar_nk;
+
+UPDATE   STAGE_ORDERS
+SET   Ship_Dt_WK = calendar_wk
+FROM   STAGE_ORDERS S, DIM_Calendar C
+WHERE   S.ShipDate = C.Calendar_nk;
+ 

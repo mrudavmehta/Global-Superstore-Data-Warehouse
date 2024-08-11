@@ -1,0 +1,15 @@
+Use Northwind
+Go
+
+/* Populating Stage_SHIPPER */
+
+Insert into  Northwind_DW.dbo.Stage_SHIPPER(shipper_nk,
+shipper_name,phone)
+
+
+
+
+SELECT 
+	ShipperID, CompanyName, Phone
+FROM
+	Shippers

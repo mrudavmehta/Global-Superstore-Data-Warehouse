@@ -1,0 +1,9 @@
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM FROM_TO_DATE)
+INSERT INTO AUDIT_JOB
+                      (job_name, job_status, job_start_dt, post_start_dt, post_end_dt)
+VALUES     ('Northwind DW','Running',GETDATE(),@dtStartDate,@dtEndDate )
+ 

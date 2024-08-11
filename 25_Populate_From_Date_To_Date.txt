@@ -1,0 +1,7 @@
+/* Populate 25_From_Date_To_Date */
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = '1/1/1995'
+SELECT @dtEndDate = '12/31/1995'
+INSERT INTO FROM_TO_DATE (StartDate, EndDate) values (@dtStartDate , @dtEndDate)

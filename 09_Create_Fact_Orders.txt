@@ -1,0 +1,78 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE FACT_ORDERS (
+	order_wk 		int 		IDENTITY,
+	order_nk		int 		NOT NULL,
+	customer_wk		int 		NOT NULL,
+	employee_wk		int 		NOT NULL,
+	order_date_wk		int 		NOT NULL,
+	required_date_wk	int 		NOT NULL,
+	shipped_date_wk		int 		NOT NULL,
+	ship_to_geography_wk	int 		NOT NULL,
+	shipper_wk		int 		NOT NULL,	
+	freight			money 		NOT NULL,
+	total_order_item_count	smallint	NOT NULL,
+	total_order_dollars	money		NOT NULL,
+	total_order_discount_dollars	money		NOT NULL,
+	lead_time_days		smallint	NULL,
+	internal_response_time_days	smallint	NULL,
+	external_response_time_days	smallint	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_FACT_ORDERS ON FACT_ORDERS
+	(
+		order_nk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_ORDER_DATE ON FACT_ORDERS
+	(
+		order_date_wk
+	)
+Go
+
+
+
+
+CREATE INDEX IDX_FACT_ORDERS_SHIPPER ON FACT_ORDERS
+	(
+		shipper_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_CUSTOMER ON FACT_ORDERS
+	(
+		customer_wk
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_SHIP_TO ON FACT_ORDERS
+	(
+		ship_to_geography_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_EMPLOYEE ON FACT_ORDERS
+	(
+		employee_wk
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_SHIPPED ON FACT_ORDERS
+	(
+		shipped_date_wk
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_REQUIRED ON FACT_ORDERS
+	(
+		required_date_wk
+	)
+Go

@@ -1,0 +1,37 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_SUPPLIER (
+	supplier_nk			int 		NOT NULL,
+	supplier_name			nvarchar(80)	NULL,
+	contact_name			nvarchar(60)	NULL,
+	contact_title			nvarchar(60)	NULL,
+	address				nvarchar(120)	NULL,
+	geography_wk			int 		NULL,
+	country				nvarchar(30)	NULL,
+	state_region			nvarchar(30)	NULL,
+	city				nvarchar(30)	NULL,
+	postal_code			nvarchar(20)	NULL,
+	phone				nvarchar(48)	NULL,
+	fax				nvarchar(48)	NULL,
+	home_page			ntext	NULL,
+	record_exists			char(1)		NULL,
+	audit_id			int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_SUPPLIER ON STAGE_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_SUPPLIER_GEOGRAPHY ON STAGE_SUPPLIER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go

@@ -1,0 +1,28 @@
+Use Northwind
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM FROM_TO_DATE)
+
+/* Populating Stage_ORDER_ITEMS */
+
+Insert into  Northwind_DW.dbo.Stage_ORDER_ITEMS(order_nk, customer_nk,employee_nk,
+order_date,required_date,
+shipped_date,lead_time_days,internal_response_time_days,
+external_response_time_days,shipper_nk,product_nk,unit_price,quantity, discount,country,state_region,city,postal_code )
+
+SELECT  OD.OrderID, CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, 
+	DATEDIFF(dd, OrderDate, RequiredDate) AS lead_time_days,
+	DATEDIFF(dd, OrderDate, ShippedDate) AS internal_response_time_days,
+	DATEDIFF(dd, ShippedDate, RequiredDate) AS external_response_time_days,
+	ShipVia, OD.ProductID, UnitPrice, Quantity, Discount, ShipCountry, ShipRegion, ShipCity, ShipPostalCode
+FROM         "Order Details" OD FULL OUTER JOIN Orders O
+              ON OD.OrderID = O.OrderID
+WHERE (O.OrderDate BETWEEN @dtStartDate AND @dtEndDate)
+	OR
+	(O.ShippedDate BETWEEN @dtStartDate AND @dtEndDate)
+
+

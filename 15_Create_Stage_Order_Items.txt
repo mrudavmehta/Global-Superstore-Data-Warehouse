@@ -1,0 +1,50 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_ORDER_ITEMS (
+	order_nk		int 		NOT NULL,
+	product_nk		int 		NOT NULL,
+	customer_nk		nchar(10)	NULL,
+	employee_nk		int 		NULL,
+	order_date		datetime	NULL,
+	required_date		datetime	NULL,
+	shipped_date		datetime	NULL,
+	lead_time_days		smallint	NULL,
+	internal_response_time_days	smallint	NULL,
+	external_response_time_days	smallint	NULL,
+	shipper_nk		int 		NULL,			
+	unit_price		money 		NOT NULL,
+	quantity		smallint	NOT NULL,
+	discount		real		NOT NULL,
+	geography_wk		int 		NULL,
+	customer_wk		int 		NULL,
+	employee_wk		int 		NULL,
+	order_date_wk		int 		NULL,				required_date_wk	int 		NULL,
+	shipped_date_wk		int 		NULL, 				shipper_wk		int 		NULL,
+	product_wk		int 		NULL,
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS ON STAGE_ORDER_ITEMS
+	(
+		order_nk,
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS_GEOGRAPHY ON STAGE_ORDER_ITEMS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+

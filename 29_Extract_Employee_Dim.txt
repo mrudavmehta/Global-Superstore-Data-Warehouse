@@ -1,0 +1,24 @@
+  Use Northwind
+Go
+
+/* Populating Stage_EMPLOYEE */
+
+Insert into  Northwind_DW.dbo.Stage_EMPLOYEE(employee_nk,direct_report_nk,employee_name,title,address, 
+country,state_region,city,postal_code,phone,birth_date,
+hire_date,region_nk,region_name)
+
+SELECT
+	E.EmployeeID, ReportsTo, LastName + ',  ' + FirstName AS employee_name, Title, Address, 
+	Country, Region, City, PostalCode, HomePhone, BirthDate, HireDate, R.RegionID, R.RegionDescription
+FROM
+	Employees E,
+	EmployeeTerritories ET,
+	Territories T,
+	Region R
+WHERE
+	E.EmployeeID = ET.EmployeeID AND
+	ET.TerritoryID = T.TerritoryID AND
+	T.RegionID = R.RegionID
+GROUP BY 
+	E.EmployeeID, ReportsTo, LastName + ',  ' + FirstName, Title, Address, Country, Region, 
+	City, PostalCode, HomePhone, BirthDate, HireDate, R.RegionID, R.RegionDescription	

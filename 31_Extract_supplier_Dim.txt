@@ -1,0 +1,13 @@
+Use Northwind
+Go
+
+/* Populating Stage_SUPPLIER */
+
+Insert into  Northwind_DW.dbo.Stage_SUPPLIER(supplier_nk,
+supplier_name,contact_name,contact_title,address,country,
+state_region,city,postal_code,phone,fax,home_page)
+
+SELECT     
+	SupplierID, CompanyName, ContactName, ContactTitle, Address, Country, Region, City, PostalCode, Phone, Fax, HomePage
+FROM   
+	Suppliers

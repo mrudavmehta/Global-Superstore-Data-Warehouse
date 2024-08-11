@@ -1,0 +1,15 @@
+ Use Northwind
+Go
+
+/* Populating Stage_PRODUCT */
+
+Insert into  Northwind_DW.dbo.Stage_PRODUCT(product_nk,supplier_nk,category_nk,category_name,
+product_name,quantity_per_unit,unit_price,units_in_stock,
+units_on_order,reorder_level,discontinued_flag)
+
+
+SELECT     
+	ProductID, SupplierID, P.CategoryID, CategoryName, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued
+FROM
+Products P LEFT JOIN Categories C ON P.CategoryID = C.CategoryID
+

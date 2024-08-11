@@ -1,0 +1,101 @@
+CREATE INDEX IDX_STAGE_CUSTOMER ON STAGE_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER_GEOGRAPHY ON STAGE_CUSTOMER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE ON STAGE_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE_GEOGRAPHY ON STAGE_EMPLOYEE
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+
+Go
+
+
+CREATE INDEX IDX_STAGE_GEOGRAPHY ON STAGE_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS ON STAGE_ORDER_ITEMS
+	(
+		order_nk,
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS_GEOGRAPHY ON STAGE_ORDER_ITEMS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+CREATE UNIQUE INDEX IDX_STAGE_ORDERS ON STAGE_ORDERS
+	(
+		order_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDERS_GEOGRAPHY ON STAGE_ORDERS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+CREATE UNIQUE INDEX IDX_STAGE_PRODUCT ON STAGE_PRODUCT
+	(
+		product_nk
+	)
+Go
+
+CREATE UNIQUE INDEX IDX_STAGE_SHIPPER ON STAGE_SHIPPER
+	(
+		shipper_nk
+	)
+Go
+
+
+CREATE UNIQUE INDEX IDX_STAGE_SUPPLIER ON STAGE_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_SUPPLIER_GEOGRAPHY ON STAGE_SUPPLIER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go

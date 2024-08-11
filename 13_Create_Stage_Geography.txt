@@ -1,0 +1,22 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_GEOGRAPHY (
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_GEOGRAPHY ON STAGE_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go

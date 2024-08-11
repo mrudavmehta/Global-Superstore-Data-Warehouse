@@ -1,0 +1,35 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_SUPPLIER (
+	supplier_wk 		int 		IDENTITY,
+	supplier_nk		int 		NULL,
+	geography_wk		int 		NOT NULL,
+	supplier_name		nvarchar(80)	NOT NULL,
+	contact_name		nvarchar(60)	NULL,
+	contact_title		nvarchar(60)	NULL,
+	address			nvarchar(120)	NULL,
+	phone			nvarchar(48)	NULL,
+	fax			nvarchar(48)	NULL,
+	home_page		nvarchar(255)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_SUPPLIER ON DIM_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_SUPPLIER_GEOGRAPHY_WK ON DIM_SUPPLIER
+	(
+		geography_wk
+	)
+Go
+
+
+ALTER TABLE DIM_supplier
+	ADD PRIMARY KEY (supplier_wk)
+Go

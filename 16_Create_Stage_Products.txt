@@ -1,0 +1,27 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_PRODUCT (
+	product_nk		int 		NOT NULL,
+	supplier_nk		int		NULL,
+	supplier_wk		int		NULL,
+	category_nk		int		NULL,
+	product_name		nvarchar(80)	NULL,
+	category_name		nvarchar(30)	NULL,
+	quantity_per_unit	nvarchar(40)	NULL,
+	unit_price		money		NULL,
+	units_in_stock		smallint	NULL,
+	units_on_order		smallint	NULL,
+	reorder_level		smallint	NULL,
+	discontinued_flag	tinyint 	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_PRODUCT ON STAGE_PRODUCT
+	(
+		product_nk
+	)
+Go

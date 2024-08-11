@@ -1,0 +1,44 @@
+UPDATE
+    STAGE_CUSTOMER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_CUSTOMER S, DIM_CUSTOMER D
+
+WHERE 
+
+S.customer_nk = D.customer_nk
+
+
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_CUSTOMER S, DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    geography_wk =  0
+
+WHERE 
+
+    geography_wk IS NULL

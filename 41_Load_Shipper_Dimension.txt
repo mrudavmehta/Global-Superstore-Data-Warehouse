@@ -1,0 +1,27 @@
+INSERT INTO
+	DIM_SHIPPER
+	(shipper_nk, shipper_name, phone, audit_id)
+SELECT
+	shipper_nk, shipper_name, phone, audit_id
+FROM
+	STAGE_SHIPPER
+WHERE
+	record_exists IS NULL
+go
+
+UPDATE DIM_SHIPPER
+
+SET
+
+shipper_nk = S.shipper_nk,
+shipper_name = S.shipper_name, 
+phone = S.phone, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_SHIPPER D, STAGE_SHIPPER S
+
+WHERE D.shipper_nk = S.shipper_nk AND
+	S.record_exists = 'Y'
+go

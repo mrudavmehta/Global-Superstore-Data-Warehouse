@@ -1,0 +1,5 @@
+/* Create 01_From_Date_To_Date */
+CREATE TABLE FROM_TO_DATE (
+StartDate datetime,
+EndDate datetime)
+Go

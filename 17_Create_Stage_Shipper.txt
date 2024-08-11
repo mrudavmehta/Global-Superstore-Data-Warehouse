@@ -1,0 +1,19 @@
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_SHIPPER (
+	shipper_nk		int 		NOT NULL,
+	shipper_name		nvarchar(80)	NULL,
+	phone			nvarchar(48)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_SHIPPER ON STAGE_SHIPPER
+	(
+		shipper_nk
+	)
+Go

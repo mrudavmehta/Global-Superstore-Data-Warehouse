@@ -1,0 +1,34 @@
+INSERT INTO
+	DIM_CUSTOMER
+	(customer_nk, geography_wk, customer_name, contact_name,
+	 contact_title, address, phone, fax, audit_id)
+SELECT
+	customer_nk, geography_wk, customer_name, contact_name,
+	 contact_title, address, phone, fax, audit_id
+FROM
+	STAGE_CUSTOMER
+WHERE
+	record_exists IS NULL
+go
+
+UPDATE DIM_CUSTOMER
+
+SET
+
+customer_nk = S.customer_nk,
+geography_wk = S.geography_wk, 
+customer_name = S.customer_name, 
+contact_name = S.contact_name, 
+contact_title = S.contact_title, 
+address = S.address, 
+phone = S.phone, 
+fax = S.fax, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_CUSTOMER D, STAGE_CUSTOMER S
+
+WHERE D.customer_nk = S.customer_nk AND
+	S.record_exists = 'Y'
+go

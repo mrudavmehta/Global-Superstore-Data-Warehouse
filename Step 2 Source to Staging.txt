@@ -1,0 +1,403 @@
+/* 23_audit_Job to 36_Create_Stage_Indexes */
+
+/* Populate 25_From_Date_To_Date */
+use Northwind_DW
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+TRUNCATE TABLE FROM_TO_DATE
+SELECT @dtStartDate = '1/1/1996'
+SELECT @dtEndDate = '12/31/1996'
+INSERT INTO FROM_TO_DATE (StartDate, EndDate) values (@dtStartDate , @dtEndDate)
+
+GO
+
+
+/* Inserting job in audit table */
+
+use Northwind_DW
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM FROM_TO_DATE)
+INSERT INTO AUDIT_JOB
+                      (job_name, job_status, job_start_dt, post_start_dt, post_end_dt)
+VALUES     ('Northwind DW','Running',GETDATE(),@dtStartDate,@dtEndDate ) 
+ 
+/* Drop Index */
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_CUSTOMER')
+DROP INDEX STAGE_CUSTOMER.IDX_STAGE_CUSTOMER
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_CUSTOMER_GEOGRAPHY')
+DROP INDEX STAGE_CUSTOMER.IDX_STAGE_CUSTOMER_GEOGRAPHY 
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_EMPLOYEE')
+DROP INDEX STAGE_EMPLOYEE.IDX_STAGE_EMPLOYEE 
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_EMPLOYEE_GEOGRAPHY')
+DROP INDEX STAGE_EMPLOYEE.IDX_STAGE_EMPLOYEE_GEOGRAPHY
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_GEOGRAPHY')
+DROP INDEX STAGE_GEOGRAPHY.IDX_STAGE_GEOGRAPHY
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDER_ITEMS')
+DROP INDEX STAGE_ORDER_ITEMS.IDX_STAGE_ORDER_ITEMS
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDER_ITEMS_GEOGRAPHY')
+DROP INDEX STAGE_ORDER_ITEMS.IDX_STAGE_ORDER_ITEMS_GEOGRAPHY
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDERS')
+DROP INDEX STAGE_ORDERS.IDX_STAGE_ORDERS
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDERS_GEOGRAPHY')
+DROP INDEX STAGE_ORDERS.IDX_STAGE_ORDERS_GEOGRAPHY
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_PRODUCT')
+DROP INDEX STAGE_PRODUCT.IDX_STAGE_PRODUCT
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_SHIPPER')
+DROP INDEX STAGE_SHIPPER.IDX_STAGE_SHIPPER
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_SUPPLIER')
+DROP INDEX STAGE_SUPPLIER.IDX_STAGE_SUPPLIER
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_SUPPLIER_GEOGRAPHY')
+DROP INDEX STAGE_SUPPLIER.IDX_STAGE_SUPPLIER_GEOGRAPHY
+Go
+
+
+TRUNCATE TABLE STAGE_GEOGRAPHY
+Go
+
+TRUNCATE TABLE STAGE_CUSTOMER
+Go
+
+
+TRUNCATE TABLE STAGE_PRODUCT
+Go
+
+
+TRUNCATE TABLE STAGE_EMPLOYEE
+Go
+
+
+
+TRUNCATE TABLE STAGE_SHIPPER
+Go
+
+
+
+TRUNCATE TABLE STAGE_SUPPLIER
+Go
+
+
+TRUNCATE TABLE STAGE_ORDER_ITEMS
+Go
+
+
+TRUNCATE TABLE STAGE_ORDERS
+Go
+
+Use Northwind
+Go
+
+/* Populating Stage_Geography */
+
+Insert into  Northwind_DW.dbo.Stage_Geography(country,state_region,city,postal_code) 
+
+SELECT country, Region, city, postalcode
+FROM customers
+
+UNION
+
+SELECT country, Region, city, postalcode
+FROM suppliers
+
+UNION
+
+SELECT country, Region, city, postalcode
+FROM employees
+
+UNION
+
+SELECT shipcountry, shipregion, shipcity, shippostalcode
+FROM orders
+ 
+Use Northwind
+Go
+
+/* Populating Stage_CUSTOMER */
+
+Insert into  Northwind_DW.dbo.Stage_CUSTOMER(customer_nk,customer_name,contact_name,contact_title,address,
+country,state_region, city, postal_code,phone, fax)
+
+SELECT 
+	CustomerID, CompanyName, ContactName, ContactTitle, Address, Country, Region, City, PostalCode, Phone, Fax
+FROM
+	Customers
+
+  Use Northwind
+Go
+
+/* Populating Stage_EMPLOYEE */
+
+Insert into  Northwind_DW.dbo.Stage_EMPLOYEE(employee_nk,direct_report_nk,employee_name,title,address, 
+country,state_region,city,postal_code,phone,birth_date,
+hire_date,region_nk,region_name)
+
+SELECT
+	E.EmployeeID, ReportsTo, LastName + ',  ' + FirstName AS employee_name, Title, Address, 
+	Country, Region, City, PostalCode, HomePhone, BirthDate, HireDate, R.RegionID, R.RegionDescription
+FROM
+	Employees E,
+	EmployeeTerritories ET,
+	Territories T,
+	Region R
+WHERE
+	E.EmployeeID = ET.EmployeeID AND
+	ET.TerritoryID = T.TerritoryID AND
+	T.RegionID = R.RegionID
+GROUP BY 
+	E.EmployeeID, ReportsTo, LastName + ',  ' + FirstName, Title, Address, Country, Region, 
+	City, PostalCode, HomePhone, BirthDate, HireDate, R.RegionID, R.RegionDescription	
+
+ Use Northwind
+Go
+
+/* Populating Stage_PRODUCT */
+
+Insert into  Northwind_DW.dbo.Stage_PRODUCT(product_nk,supplier_nk,category_nk,category_name,
+product_name,quantity_per_unit,unit_price,units_in_stock,
+units_on_order,reorder_level,discontinued_flag)
+
+
+SELECT     
+	ProductID, SupplierID, P.CategoryID, CategoryName, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued
+FROM
+Products P LEFT JOIN Categories C ON P.CategoryID = C.CategoryID
+
+Use Northwind
+Go
+
+/* Populating Stage_SUPPLIER */
+
+Insert into  Northwind_DW.dbo.Stage_SUPPLIER(supplier_nk,
+supplier_name,contact_name,contact_title,address,country,
+state_region,city,postal_code,phone,fax,home_page)
+
+SELECT     
+	SupplierID, CompanyName, ContactName, ContactTitle, Address, Country, Region, City, PostalCode, Phone, Fax, HomePage
+FROM   
+	Suppliers
+
+Use Northwind
+Go
+
+/* Populating Stage_SHIPPER */
+
+Insert into  Northwind_DW.dbo.Stage_SHIPPER(shipper_nk,
+shipper_name,phone)
+
+
+
+
+SELECT 
+	ShipperID, CompanyName, Phone
+FROM
+	Shippers
+
+Use Northwind
+Go
+
+/* Populating Stage_ORDERS */
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+
+Insert into  Northwind_DW.dbo.Stage_ORDERS(order_nk,employee_nk,customer_nk,shipper_nk,order_date,required_date,
+shipped_date,lead_time_days,internal_response_time_days,
+external_response_time_days,freight,
+total_order_item_count,total_order_dollars,total_order_discount_dollars,city, state_region, postal_code, country)
+
+SELECT     O.OrderID, EmployeeID, CustomerID, ShipVia, OrderDate, RequiredDate, ShippedDate, 
+	DATEDIFF(dd, OrderDate, RequiredDate) AS lead_time_days,
+	DATEDIFF(dd, OrderDate, ShippedDate) AS internal_response_time_days,
+	DATEDIFF(dd, ShippedDate, RequiredDate) AS external_response_time_days,
+	Freight,
+	SUM(OD.Quantity) AS total_order_item_count, 
+	SUM((OD.Quantity * OD.UnitPrice) - ((OD.Quantity * OD.UnitPrice) * OD.Discount)) AS total_order_dollars,
+	SUM((OD.Quantity * OD.UnitPrice) * OD.Discount) AS total_order_discount_dollars,
+         ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+FROM         Orders O INNER JOIN
+             "Order Details" OD ON O.OrderID = OD.OrderID
+WHERE (O.OrderDate BETWEEN @dtStartDate AND @dtEndDate)
+	OR
+	(O.ShippedDate BETWEEN @dtStartDate AND @dtEndDate)
+
+
+GROUP BY
+O.OrderID, EmployeeID, CustomerID, ShipVia, OrderDate, RequiredDate, ShippedDate, Freight,
+        ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+
+/* Populating Stage_ORDER_ITEMS */
+
+Use Northwind
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+
+/* Populating Stage_ORDER_ITEMS */
+
+Insert into  Northwind_DW.dbo.Stage_ORDER_ITEMS(order_nk, customer_nk,employee_nk,
+order_date,required_date,
+shipped_date,lead_time_days,internal_response_time_days,
+external_response_time_days,shipper_nk,product_nk,unit_price,quantity, discount,country,state_region,city,postal_code )
+
+SELECT  OD.OrderID, CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, 
+	DATEDIFF(dd, OrderDate, RequiredDate) AS lead_time_days,
+	DATEDIFF(dd, OrderDate, ShippedDate) AS internal_response_time_days,
+	DATEDIFF(dd, ShippedDate, RequiredDate) AS external_response_time_days,
+	ShipVia, OD.ProductID, UnitPrice, Quantity, Discount, ShipCountry, ShipRegion, ShipCity, ShipPostalCode
+FROM         "Order Details" OD FULL OUTER JOIN Orders O
+              ON OD.OrderID = O.OrderID
+WHERE (O.OrderDate BETWEEN @dtStartDate AND @dtEndDate)
+	OR
+	(O.ShippedDate BETWEEN @dtStartDate AND @dtEndDate)
+
+/* Create Index */
+Use Northwind_DW
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER ON STAGE_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER_GEOGRAPHY ON STAGE_CUSTOMER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE ON STAGE_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE_GEOGRAPHY ON STAGE_EMPLOYEE
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+
+Go
+
+
+CREATE INDEX IDX_STAGE_GEOGRAPHY ON STAGE_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS ON STAGE_ORDER_ITEMS
+	(
+		order_nk,
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS_GEOGRAPHY ON STAGE_ORDER_ITEMS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+CREATE UNIQUE INDEX IDX_STAGE_ORDERS ON STAGE_ORDERS
+	(
+		order_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDERS_GEOGRAPHY ON STAGE_ORDERS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+CREATE UNIQUE INDEX IDX_STAGE_PRODUCT ON STAGE_PRODUCT
+	(
+		product_nk
+	)
+Go
+
+CREATE UNIQUE INDEX IDX_STAGE_SHIPPER ON STAGE_SHIPPER
+	(
+		shipper_nk
+	)
+Go
+
+
+CREATE UNIQUE INDEX IDX_STAGE_SUPPLIER ON STAGE_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_SUPPLIER_GEOGRAPHY ON STAGE_SUPPLIER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+ 
+ 

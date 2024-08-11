@@ -1,0 +1,34 @@
+UPDATE
+    STAGE_EMPLOYEE
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_EMPLOYEE
+SET
+    record_exists = 'Y'
+
+FROM STAGE_EMPLOYEE S, DIM_EMPLOYEE D
+
+WHERE 
+
+S.employee_nk = D.employee_nk
+
+
+
+
+UPDATE
+    STAGE_EMPLOYEE
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_EMPLOYEE S, DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ')

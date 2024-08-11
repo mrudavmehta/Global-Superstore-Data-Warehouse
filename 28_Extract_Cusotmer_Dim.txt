@@ -1,0 +1,12 @@
+Use Northwind
+Go
+
+/* Populating Stage_CUSTOMER */
+
+Insert into  Northwind_DW.dbo.Stage_CUSTOMER(customer_nk,customer_name,contact_name,contact_title,address,
+country,state_region, city, postal_code,phone, fax)
+
+SELECT 
+	CustomerID, CompanyName, ContactName, ContactTitle, Address, Country, Region, City, PostalCode, Phone, Fax
+FROM
+	Customers

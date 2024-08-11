@@ -1,0 +1,27 @@
+UPDATE
+    STAGE_PRODUCT
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE
+    STAGE_PRODUCT
+SET
+    supplier_wk =  D.supplier_wk
+
+FROM STAGE_PRODUCT S,  DIM_SUPPLIER D
+WHERE 
+
+    S.supplier_nk =  D.supplier_nk
+
+
+UPDATE
+    STAGE_PRODUCT
+SET
+    record_exists = 'Y'
+
+FROM STAGE_PRODUCT S, DIM_PRODUCT D
+
+WHERE 
+
+S.product_nk = D.product_nk

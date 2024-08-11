@@ -1,0 +1,46 @@
+INSERT INTO
+	DIM_PRODUCT
+	(product_nk, supplier_wk, product_name, category_nk, category_name, quantity_per_unit, unit_price, units_in_stock, units_on_order, reorder_level, discontinued_flag, audit_id)
+
+SELECT
+	product_nk, supplier_wk, product_name, category_nk, 		category_name, quantity_per_unit, unit_price, units_in_stock, 		units_on_order, reorder_level,
+
+CASE 
+	WHEN discontinued_flag = 0
+		THEN 'Current'
+	ELSE 'Discontinued'
+END
+
+, audit_id
+
+FROM
+	STAGE_PRODUCT 
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_PRODUCT
+
+SET
+
+product_nk = S.product_nk, 
+supplier_wk = S.supplier_wk,
+product_name = S.product_name, 
+category_nk = S.category_nk,
+category_name = S.category_name, 
+quantity_per_unit = S.quantity_per_unit, 
+unit_price = S.unit_price, 
+units_in_stock = S.units_in_stock, 
+units_on_order = S.units_on_order, 
+reorder_level = S.reorder_level, 
+discontinued_flag = S.discontinued_flag, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_PRODUCT D, STAGE_PRODUCT S
+
+WHERE D.product_nk = S.product_nk AND
+	S.record_exists = 'Y'
+go

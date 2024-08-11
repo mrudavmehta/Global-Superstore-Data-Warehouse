@@ -1,0 +1,7 @@
+USE Group3DW
+INSERT INTO FACT_ORDERS(Shipping_Cost,Profit,Quantity,Response,Sales,C_WK,Prod_WK,Order_WK,Loc_WK,Discount,Order_Dt_WK,Ship_Dt_WK)
+
+SELECT DISTINCT ShippingCost,Profit,Quantity,Response,Sales,C_WK,Prod_WK,ORDER_WK,Loc_WK,Discount,Order_Dt_WK,Ship_Dt_WK FROM STAGE_ORDERS
+
+
+

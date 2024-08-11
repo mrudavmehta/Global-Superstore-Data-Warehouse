@@ -1,0 +1,67 @@
+/*Truncate TABLE dbo.STAGE_ORDERS*/
+USE Group3DW
+Go
+
+/* Drop Index, if any */
+Truncate TABLE dbo.STAGE_ORDERS
+/* Copy Data from Operation System */
+/* Create Index, if any */
+
+
+/*Insert into  dbo.STAGE_ORDERS*/
+Use Group3DW
+Go
+SET ANSI_WARNINGS OFF
+Insert into  dbo.STAGE_ORDERS(
+	OrderID,
+	OrderDate,
+	ShipDate,
+	ShipMode,
+	CustomerID,
+	CustomerName,
+	Segment, 
+	City, 
+	State, 
+	Country, 
+	ProductID,
+	Category,
+	Sub_category,
+	ProductName,
+	Sales,
+	Quantity,
+	Discount,
+	Profit,
+	ShippingCost,
+	OrderPriority,
+	Response
+) 
+select 
+	e.[OrderID] ,
+	e.[OrderDate] ,
+	e.[ShipDate] ,
+	e.[ShipMode] ,
+	e.[CustomerID],
+	e.[CustomerName] ,
+	e.[Segment] ,
+	e.[City] ,
+	e.[State] ,
+	e.[Country] ,
+	e.[ProductID] ,
+	e.[Category] ,
+	e.[SubCategory] ,
+	e.[ProductName] ,
+	e.[Sales] ,
+	e.[Quantity] ,
+	e.[Discount] ,
+	e.[Profit] ,
+	e.[ShippingCost] ,
+	e.[OrderPriority] ,
+	datediff(dd,e.[OrderDate],e.[ShipDate])
+	
+	
+
+from Group3OP.dbo.Orders as e 
+where e.[OrderDate] between '01/01/2011' and '12/31/2015' 
+SET ANSI_WARNINGS ON
+
+

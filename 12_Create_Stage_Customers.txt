@@ -1,0 +1,36 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_CUSTOMER (
+	customer_nk	nchar(10)	NOT NULL,
+	customer_name	nvarchar(80)	NULL,
+	contact_name	nvarchar(60)	NULL,
+	contact_title	nvarchar(60)	NULL,
+	address 	nvarchar(120)	NULL,
+	geography_wk	int		NULL,
+	country		nvarchar(30)	NULL,
+	state_region	nvarchar(30)	NULL,
+	city		nvarchar(30)	NULL,
+	postal_code	nvarchar(20)	NULL,
+	phone		nvarchar(48)	NULL,
+	fax		nvarchar(48)	NULL,
+	record_exists	char(1)		NULL,
+	audit_id	int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_CUSTOMER ON STAGE_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER_GEOGRAPHY ON STAGE_CUSTOMER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go

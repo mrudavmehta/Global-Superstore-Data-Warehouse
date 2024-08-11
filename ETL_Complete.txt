@@ -1,0 +1,1029 @@
+/* 23_audit_Job to 36_Create_Stage_Indexes */
+
+/* Populate 25_From_Date_To_Date */
+use Northwind_DW
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+TRUNCATE TABLE FROM_TO_DATE
+SELECT @dtStartDate = '1/1/2000'
+SELECT @dtEndDate = '12/31/2001'
+INSERT INTO FROM_TO_DATE (StartDate, EndDate) values (@dtStartDate , @dtEndDate)
+
+GO
+
+
+/* Inserting job in audit table */
+
+use Northwind_DW
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM FROM_TO_DATE)
+INSERT INTO AUDIT_JOB
+                      (job_name, job_status, job_start_dt, post_start_dt, post_end_dt)
+VALUES     ('Northwind DW','Running',GETDATE(),@dtStartDate,@dtEndDate ) 
+ 
+/* Drop Index */
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_CUSTOMER')
+DROP INDEX STAGE_CUSTOMER.IDX_STAGE_CUSTOMER
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_CUSTOMER_GEOGRAPHY')
+DROP INDEX STAGE_CUSTOMER.IDX_STAGE_CUSTOMER_GEOGRAPHY 
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_EMPLOYEE')
+DROP INDEX STAGE_EMPLOYEE.IDX_STAGE_EMPLOYEE 
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_EMPLOYEE_GEOGRAPHY')
+DROP INDEX STAGE_EMPLOYEE.IDX_STAGE_EMPLOYEE_GEOGRAPHY
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_GEOGRAPHY')
+DROP INDEX STAGE_GEOGRAPHY.IDX_STAGE_GEOGRAPHY
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDER_ITEMS')
+DROP INDEX STAGE_ORDER_ITEMS.IDX_STAGE_ORDER_ITEMS
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDER_ITEMS_GEOGRAPHY')
+DROP INDEX STAGE_ORDER_ITEMS.IDX_STAGE_ORDER_ITEMS_GEOGRAPHY
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDERS')
+DROP INDEX STAGE_ORDERS.IDX_STAGE_ORDERS
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_ORDERS_GEOGRAPHY')
+DROP INDEX STAGE_ORDERS.IDX_STAGE_ORDERS_GEOGRAPHY
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_PRODUCT')
+DROP INDEX STAGE_PRODUCT.IDX_STAGE_PRODUCT
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_SHIPPER')
+DROP INDEX STAGE_SHIPPER.IDX_STAGE_SHIPPER
+Go
+
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_SUPPLIER')
+DROP INDEX STAGE_SUPPLIER.IDX_STAGE_SUPPLIER
+Go
+
+IF EXISTS (SELECT * FROM dbo.sysindexes WHERE NAME = 'IDX_STAGE_SUPPLIER_GEOGRAPHY')
+DROP INDEX STAGE_SUPPLIER.IDX_STAGE_SUPPLIER_GEOGRAPHY
+Go
+
+
+TRUNCATE TABLE STAGE_GEOGRAPHY
+Go
+
+TRUNCATE TABLE STAGE_CUSTOMER
+Go
+
+
+TRUNCATE TABLE STAGE_PRODUCT
+Go
+
+
+TRUNCATE TABLE STAGE_EMPLOYEE
+Go
+
+
+
+TRUNCATE TABLE STAGE_SHIPPER
+Go
+
+
+
+TRUNCATE TABLE STAGE_SUPPLIER
+Go
+
+
+TRUNCATE TABLE STAGE_ORDER_ITEMS
+Go
+
+
+TRUNCATE TABLE STAGE_ORDERS
+Go
+
+Use Northwind
+Go
+
+/* Populating Stage_Geography */
+
+Insert into  Northwind_DW.dbo.Stage_Geography(country,state_region,city,postal_code) 
+
+SELECT country, Region, city, postalcode
+FROM customers
+
+UNION
+
+SELECT country, Region, city, postalcode
+FROM suppliers
+
+UNION
+
+SELECT country, Region, city, postalcode
+FROM employees
+
+UNION
+
+SELECT shipcountry, shipregion, shipcity, shippostalcode
+FROM orders
+ 
+Use Northwind
+Go
+
+/* Populating Stage_CUSTOMER */
+
+Insert into  Northwind_DW.dbo.Stage_CUSTOMER(customer_nk,customer_name,contact_name,contact_title,address,
+country,state_region, city, postal_code,phone, fax)
+
+SELECT 
+	CustomerID, CompanyName, ContactName, ContactTitle, Address, Country, Region, City, PostalCode, Phone, Fax
+FROM
+	Customers
+
+  Use Northwind
+Go
+
+/* Populating Stage_EMPLOYEE */
+
+Insert into  Northwind_DW.dbo.Stage_EMPLOYEE(employee_nk,direct_report_nk,employee_name,title,address, 
+country,state_region,city,postal_code,phone,birth_date,
+hire_date,region_nk,region_name)
+
+SELECT
+	E.EmployeeID, ReportsTo, LastName + ',  ' + FirstName AS employee_name, Title, Address, 
+	Country, Region, City, PostalCode, HomePhone, BirthDate, HireDate, R.RegionID, R.RegionDescription
+FROM
+	Employees E,
+	EmployeeTerritories ET,
+	Territories T,
+	Region R
+WHERE
+	E.EmployeeID = ET.EmployeeID AND
+	ET.TerritoryID = T.TerritoryID AND
+	T.RegionID = R.RegionID
+GROUP BY 
+	E.EmployeeID, ReportsTo, LastName + ',  ' + FirstName, Title, Address, Country, Region, 
+	City, PostalCode, HomePhone, BirthDate, HireDate, R.RegionID, R.RegionDescription	
+
+ Use Northwind
+Go
+
+/* Populating Stage_PRODUCT */
+
+Insert into  Northwind_DW.dbo.Stage_PRODUCT(product_nk,supplier_nk,category_nk,category_name,
+product_name,quantity_per_unit,unit_price,units_in_stock,
+units_on_order,reorder_level,discontinued_flag)
+
+
+SELECT     
+	ProductID, SupplierID, P.CategoryID, CategoryName, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued
+FROM
+Products P LEFT JOIN Categories C ON P.CategoryID = C.CategoryID
+
+Use Northwind
+Go
+
+/* Populating Stage_SUPPLIER */
+
+Insert into  Northwind_DW.dbo.Stage_SUPPLIER(supplier_nk,
+supplier_name,contact_name,contact_title,address,country,
+state_region,city,postal_code,phone,fax,home_page)
+
+SELECT     
+	SupplierID, CompanyName, ContactName, ContactTitle, Address, Country, Region, City, PostalCode, Phone, Fax, HomePage
+FROM   
+	Suppliers
+
+Use Northwind
+Go
+
+/* Populating Stage_SHIPPER */
+
+Insert into  Northwind_DW.dbo.Stage_SHIPPER(shipper_nk,
+shipper_name,phone)
+
+
+
+
+SELECT 
+	ShipperID, CompanyName, Phone
+FROM
+	Shippers
+
+Use Northwind
+Go
+
+/* Populating Stage_ORDERS */
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+
+Insert into  Northwind_DW.dbo.Stage_ORDERS(order_nk,employee_nk,customer_nk,shipper_nk,order_date,required_date,
+shipped_date,lead_time_days,internal_response_time_days,
+external_response_time_days,freight,
+total_order_item_count,total_order_dollars,total_order_discount_dollars,city, state_region, postal_code, country)
+
+SELECT     O.OrderID, EmployeeID, CustomerID, ShipVia, OrderDate, RequiredDate, ShippedDate, 
+	DATEDIFF(dd, OrderDate, RequiredDate) AS lead_time_days,
+	DATEDIFF(dd, OrderDate, ShippedDate) AS internal_response_time_days,
+	DATEDIFF(dd, ShippedDate, RequiredDate) AS external_response_time_days,
+	Freight,
+	SUM(OD.Quantity) AS total_order_item_count, 
+	SUM((OD.Quantity * OD.UnitPrice) - ((OD.Quantity * OD.UnitPrice) * OD.Discount)) AS total_order_dollars,
+	SUM((OD.Quantity * OD.UnitPrice) * OD.Discount) AS total_order_discount_dollars,
+         ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+FROM         Orders O INNER JOIN
+             "Order Details" OD ON O.OrderID = OD.OrderID
+WHERE (O.OrderDate BETWEEN @dtStartDate AND @dtEndDate)
+	OR
+	(O.ShippedDate BETWEEN @dtStartDate AND @dtEndDate)
+
+
+GROUP BY
+O.OrderID, EmployeeID, CustomerID, ShipVia, OrderDate, RequiredDate, ShippedDate, Freight,
+        ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+
+/* Populating Stage_ORDER_ITEMS */
+
+Use Northwind
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+
+/* Populating Stage_ORDER_ITEMS */
+
+Insert into  Northwind_DW.dbo.Stage_ORDER_ITEMS(order_nk, customer_nk,employee_nk,
+order_date,required_date,
+shipped_date,lead_time_days,internal_response_time_days,
+external_response_time_days,shipper_nk,product_nk,unit_price,quantity, discount,country,state_region,city,postal_code )
+
+SELECT  OD.OrderID, CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, 
+	DATEDIFF(dd, OrderDate, RequiredDate) AS lead_time_days,
+	DATEDIFF(dd, OrderDate, ShippedDate) AS internal_response_time_days,
+	DATEDIFF(dd, ShippedDate, RequiredDate) AS external_response_time_days,
+	ShipVia, OD.ProductID, UnitPrice, Quantity, Discount, ShipCountry, ShipRegion, ShipCity, ShipPostalCode
+FROM         "Order Details" OD FULL OUTER JOIN Orders O
+              ON OD.OrderID = O.OrderID
+WHERE (O.OrderDate BETWEEN @dtStartDate AND @dtEndDate)
+	OR
+	(O.ShippedDate BETWEEN @dtStartDate AND @dtEndDate)
+
+/* Create Index */
+Use Northwind_DW
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER ON STAGE_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER_GEOGRAPHY ON STAGE_CUSTOMER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE ON STAGE_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE_GEOGRAPHY ON STAGE_EMPLOYEE
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+
+Go
+
+
+CREATE INDEX IDX_STAGE_GEOGRAPHY ON STAGE_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS ON STAGE_ORDER_ITEMS
+	(
+		order_nk,
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS_GEOGRAPHY ON STAGE_ORDER_ITEMS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+CREATE UNIQUE INDEX IDX_STAGE_ORDERS ON STAGE_ORDERS
+	(
+		order_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDERS_GEOGRAPHY ON STAGE_ORDERS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+CREATE UNIQUE INDEX IDX_STAGE_PRODUCT ON STAGE_PRODUCT
+	(
+		product_nk
+	)
+Go
+
+CREATE UNIQUE INDEX IDX_STAGE_SHIPPER ON STAGE_SHIPPER
+	(
+		shipper_nk
+	)
+Go
+
+
+CREATE UNIQUE INDEX IDX_STAGE_SUPPLIER ON STAGE_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_SUPPLIER_GEOGRAPHY ON STAGE_SUPPLIER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+ 
+/* 37_Clean_Load_Geography_Dim to 46_Load_Employee_Dimension */
+
+use Northwind_DW
+Go
+
+/* Cleansing and Loading Geography */
+UPDATE    STAGE_GEOGRAPHY
+SET              audit_id  = 
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE    STAGE_GEOGRAPHY
+SET              record_exists = 
+'Y'
+FROM STAGE_GEOGRAPHY S, DIM_GEOGRAPHY D
+WHERE 
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+
+INSERT INTO DIM_GEOGRAPHY
+                      (country, state_region, city, postal_code, audit_id)
+SELECT 
+country, state_region, city, postal_code, audit_id 
+FROM 
+STAGE_GEOGRAPHY
+WHERE record_exists IS NULL 
+
+/* Cleansing Customer */
+UPDATE
+    STAGE_CUSTOMER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_CUSTOMER S, DIM_CUSTOMER D
+
+WHERE 
+
+S.customer_nk = D.customer_nk
+
+
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_CUSTOMER S, DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    geography_wk =  0
+
+WHERE 
+
+    geography_wk IS NULL
+
+/* Loading Customer */
+INSERT INTO
+	DIM_CUSTOMER
+	(customer_nk, geography_wk, customer_name, contact_name,
+	 contact_title, address, phone, fax, audit_id)
+SELECT
+	customer_nk, geography_wk, customer_name, contact_name,
+	 contact_title, address, phone, fax, audit_id
+FROM
+	STAGE_CUSTOMER
+WHERE
+	record_exists IS NULL
+go
+
+UPDATE DIM_CUSTOMER
+
+SET
+
+customer_nk = S.customer_nk,
+geography_wk = S.geography_wk, 
+customer_name = S.customer_name, 
+contact_name = S.contact_name, 
+contact_title = S.contact_title, 
+address = S.address, 
+phone = S.phone, 
+fax = S.fax, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_CUSTOMER D, STAGE_CUSTOMER S
+
+WHERE D.customer_nk = S.customer_nk AND
+	S.record_exists = 'Y'
+go
+
+/* Cleansing Shipper */
+UPDATE
+    STAGE_SHIPPER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE
+    STAGE_SHIPPER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_SHIPPER S, DIM_SHIPPER D
+
+WHERE 
+
+S.shipper_nk = D.shipper_nk
+
+/* Loading Shipper */
+INSERT INTO
+	DIM_SHIPPER
+	(shipper_nk, shipper_name, phone, audit_id)
+SELECT
+	shipper_nk, shipper_name, phone, audit_id
+FROM
+	STAGE_SHIPPER
+WHERE
+	record_exists IS NULL
+go
+
+UPDATE DIM_SHIPPER
+
+SET
+
+shipper_nk = S.shipper_nk,
+shipper_name = S.shipper_name, 
+phone = S.phone, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_SHIPPER D, STAGE_SHIPPER S
+
+WHERE D.shipper_nk = S.shipper_nk AND
+	S.record_exists = 'Y'
+go
+
+/* Cleansing and Loading Supplier */
+UPDATE
+    STAGE_SUPPLIER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_SUPPLIER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_SUPPLIER S, DIM_SUPPLIER D
+
+WHERE 
+
+S.supplier_nk = D.supplier_nk
+
+
+
+UPDATE
+    STAGE_SUPPLIER
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_SUPPLIER S, DIM_GEOGRAPHY D
+
+WHERE 
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+UPDATE
+    STAGE_SUPPLIER
+SET
+    geography_wk =  0
+
+WHERE 
+
+   geography_wk IS NULL
+
+
+INSERT INTO
+	DIM_SUPPLIER
+	(supplier_nk, geography_wk, supplier_name, contact_name,
+	 contact_title, address, phone, fax, home_page, audit_id)
+SELECT
+	supplier_nk, geography_wk, supplier_name, contact_name,
+	 contact_title, address, phone, fax, home_page, audit_id
+FROM
+	STAGE_SUPPLIER
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_SUPPLIER
+
+SET
+
+geography_wk = S.geography_wk, 
+supplier_name = S.supplier_name, 
+contact_name = S.contact_name, 
+contact_title = S.contact_title, 
+address = S.address, 
+phone = S.phone, 
+fax = S.fax, 
+home_page = S.home_page,
+audit_id = S.audit_id
+
+FROM
+
+DIM_SUPPLIER D, STAGE_SUPPLIER S
+
+WHERE D.supplier_nk = S.supplier_nk AND
+	S.record_exists = 'Y'
+
+/* Cleansing Product */
+UPDATE
+    STAGE_PRODUCT
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE
+    STAGE_PRODUCT
+SET
+    supplier_wk =  D.supplier_wk
+
+FROM STAGE_PRODUCT S,  DIM_SUPPLIER D
+
+WHERE 
+
+    S.supplier_nk =  D.supplier_nk
+
+
+UPDATE
+    STAGE_PRODUCT
+SET
+    record_exists = 'Y'
+
+FROM STAGE_PRODUCT S, DIM_PRODUCT D
+
+WHERE 
+
+S.product_nk = D.product_nk
+
+/* Load Product */
+INSERT INTO
+	DIM_PRODUCT
+	(product_nk, supplier_wk, product_name, category_nk, category_name, quantity_per_unit, unit_price, units_in_stock, units_on_order, reorder_level, discontinued_flag, audit_id)
+
+SELECT
+	product_nk, supplier_wk, product_name, category_nk, 		category_name, quantity_per_unit, unit_price, units_in_stock, 		units_on_order, reorder_level,
+
+CASE 
+	WHEN discontinued_flag = 0
+		THEN 'Current'
+	ELSE 'Discontinued'
+END
+
+, audit_id
+
+FROM
+	STAGE_PRODUCT 
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_PRODUCT
+
+SET
+
+product_nk = S.product_nk, 
+supplier_wk = S.supplier_wk,
+product_name = S.product_name, 
+category_nk = S.category_nk,
+category_name = S.category_name, 
+quantity_per_unit = S.quantity_per_unit, 
+unit_price = S.unit_price, 
+units_in_stock = S.units_in_stock, 
+units_on_order = S.units_on_order, 
+reorder_level = S.reorder_level, 
+discontinued_flag = S.discontinued_flag, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_PRODUCT D, STAGE_PRODUCT S
+
+WHERE D.product_nk = S.product_nk AND
+	S.record_exists = 'Y'
+go
+
+/* Cleanse Employee */
+UPDATE
+    STAGE_EMPLOYEE
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_EMPLOYEE
+SET
+    record_exists = 'Y'
+
+FROM STAGE_EMPLOYEE S, DIM_EMPLOYEE D
+
+WHERE 
+
+S.employee_nk = D.employee_nk
+
+
+
+
+UPDATE
+    STAGE_EMPLOYEE
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_EMPLOYEE S, DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ')
+
+/* Load Employee */
+ INSERT INTO
+	DIM_EMPLOYEE
+	(employee_nk, geography_wk, direct_report_wk, direct_report_nk, employee_name, 
+	 title, address, phone, birth_date, hire_date, region_nk, region_name, audit_id)
+SELECT
+	employee_nk, geography_wk, 0, direct_report_nk, employee_name, 
+	title, address, phone, birth_date, hire_date, region_nk, region_name, audit_id
+FROM
+	STAGE_EMPLOYEE
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_EMPLOYEE
+
+SET
+
+direct_report_wk = A.employee_wk
+
+FROM
+
+(SELECT employee_wk, employee_nk FROM DIM_EMPLOYEE ) A
+
+WHERE direct_report_nk = A.employee_nk  AND audit_id = 
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+
+UPDATE DIM_EMPLOYEE
+
+SET
+
+employee_nk = S.employee_nk,
+geography_wk = S.geography_wk, 
+direct_report_wk = ISNULL((SELECT employee_wk FROM DIM_EMPLOYEE WHERE employee_nk = S.direct_report_nk), 0),
+direct_report_nk = S.direct_report_nk,
+employee_name = S.employee_name, 
+title = S.title, 
+address = S.address, 
+phone = S.phone,
+birth_date = S.birth_date,
+hire_date = S.hire_date,
+region_nk = S.region_nk,
+region_name = S.region_name,
+audit_id = S.audit_id
+
+FROM
+
+DIM_EMPLOYEE D, STAGE_EMPLOYEE S
+
+WHERE D.employee_nk = S.employee_nk AND
+	S.record_exists = 'Y'
+
+/* 47_Cleanse_order_fact to 51_write_jon_completion */
+
+use Northwind_DW
+Go
+
+/* Cleansing Order_Fact */
+UPDATE    STAGE_ORDERS
+SET            audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE    STAGE_ORDERS
+SET              record_exists = 
+'Y'
+FROM STAGE_ORDERS S, FACT_ORDERS F
+WHERE 
+
+S.order_nk = F.order_nk 
+
+UPDATE    STAGE_ORDERS
+SET       geography_wk = D.geography_wk 
+FROM 
+STAGE_ORDERS S,  DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+UPDATE    STAGE_ORDERS
+SET       customer_wk = D.customer_wk 
+FROM 
+STAGE_ORDERS S,  DIM_CUSTOMER D
+
+WHERE S.customer_nk = D.Customer_nk
+
+UPDATE    STAGE_ORDERS
+SET       employee_wk = D.employee_wk 
+FROM 
+STAGE_ORDERS S,  DIM_EMPLOYEE D
+
+WHERE S.employee_nk = D.employee_nk
+
+UPDATE    STAGE_ORDERS
+SET       order_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDERS S,  DIM_CALENDAR D
+
+WHERE S.order_date = D.calendar_nk
+
+UPDATE    STAGE_ORDERS
+SET       required_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDERS S,  DIM_CALENDAR D
+
+WHERE S.required_date = D.calendar_nk
+
+UPDATE    STAGE_ORDERS
+SET       shipped_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDERS S,  DIM_CALENDAR D
+
+WHERE S.shipped_date = D.calendar_nk
+
+UPDATE    STAGE_ORDERS
+SET       shipped_date_wk = 0
+WHERE  shipped_date_wk IS NULL
+
+UPDATE    STAGE_ORDERS
+SET       shipper_wk = D.shipper_wk 
+FROM 
+STAGE_ORDERS S,  DIM_SHIPPER D
+
+WHERE S.shipper_nk = D.shipper_nk
+
+
+
+/* Cleansing Order_Fact_Items */
+UPDATE    STAGE_ORDER_ITEMS
+SET            audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE    STAGE_ORDER_ITEMS
+SET              record_exists = 
+'Y'
+FROM STAGE_ORDER_ITEMS S, FACT_ORDER_ITEMS F
+WHERE 
+
+S.order_nk = F.order_nk AND S.product_nk = F.product_nk 
+
+
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       geography_wk = D.geography_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       customer_wk = D.customer_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CUSTOMER D
+
+WHERE S.customer_nk = D.Customer_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       employee_wk = D.employee_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_EMPLOYEE D
+
+WHERE S.employee_nk = D.employee_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       order_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CALENDAR D
+
+WHERE S.order_date = D.calendar_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       required_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CALENDAR D
+
+WHERE S.required_date = D.calendar_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       shipped_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CALENDAR D
+
+WHERE S.shipped_date = D.calendar_nk
+
+UPDATE    STAGE_ORDER_Items
+SET       shipped_date_wk = 0
+WHERE  shipped_date_wk IS NULL
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       shipper_wk = D.shipper_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_SHIPPER D
+
+WHERE S.shipper_nk = D.shipper_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       product_wk = D.product_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_PRODUCT D
+
+WHERE S.product_nk = D.product_nk
+
+
+/* Loading Order_Fact */
+
+	UPDATE FACT_ORDERS 
+	SET lead_time_days = S.lead_time_days, 
+	internal_response_time_days = S.internal_response_time_days,
+	external_response_time_days = S.external_response_time_days
+
+	 FROM STAGE_ORDERS S, FACT_ORDERS F
+	 WHERE S.order_nk = F.order_nk AND S.record_exists = 'Y'
+
+	INSERT INTO FACT_ORDERS
+	(order_nk,customer_wk, employee_wk, order_date_wk,
+	required_date_wk, shipped_date_wk, ship_to_geography_wk,
+	shipper_wk, freight, total_order_item_count, total_order_dollars, 	total_order_discount_dollars,lead_time_days,internal_response_time_days, 
+	external_response_time_days, audit_id)
+	
+	SELECT order_nk,customer_wk, employee_wk, order_date_wk,
+	required_date_wk, shipped_date_wk, geography_wk,
+	shipper_wk, freight, total_order_item_count, total_order_dollars, 	total_order_discount_dollars,lead_time_days,internal_response_time_days, 
+	external_response_time_days,  audit_id
+	FROM STAGE_ORDERS WHERE record_exists IS NULL 
+
+
+/* Loading Order_Fact_Items */
+ 
+	UPDATE FACT_ORDER_ITEMS 
+	SET lead_time_days = S.lead_time_days, 
+	internal_response_time_days = 	S.internal_response_time_days,
+	external_response_time_days = 	S.external_response_time_days
+
+	 FROM STAGE_ORDER_ITEMS S, FACT_ORDER_ITEMS F
+	 WHERE S.order_nk = F.order_nk AND 	S.product_nk = F.product_nk AND S.record_exists = 'Y'
+
+	INSERT INTO FACT_ORDER_ITEMS
+	(order_nk,product_nk, customer_wk, employee_wk, 	order_date_wk,
+	required_date_wk, shipped_date_wk, shipto_geography_wk,
+	shipper_wk, product_wk, unit_price, quantity, 	discount, lead_time_days,
+	internal_response_time_days, 
+	external_response_time_days, audit_id)
+	
+	SELECT order_nk,product_nk, customer_wk, employee_wk, 	order_date_wk,
+	required_date_wk, shipped_date_wk, geography_wk,
+	shipper_wk, product_wk, unit_price, quantity, 	discount, lead_time_days,
+	internal_response_time_days, 
+	external_response_time_days,  audit_id
+	FROM STAGE_ORDER_ITEMS WHERE record_exists IS NULL 
+
+
+/* Writing job completion in Audit Table */
+ 
+
+UPDATE AUDIT_JOB SET job_status = 'completed', job_end_dt = GETDATE() WHERE audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+ 
+ 

@@ -1,0 +1,409 @@
+/* 37_Clean_Load_Geography_Dim to 46_Load_Employee_Dimension */
+
+use Northwind_DW
+Go
+
+/* Cleansing and Loading Geography */
+UPDATE    STAGE_GEOGRAPHY
+SET              audit_id  = 
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE    STAGE_GEOGRAPHY
+SET              record_exists = 
+'Y'
+FROM STAGE_GEOGRAPHY S, DIM_GEOGRAPHY D
+WHERE 
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+
+INSERT INTO DIM_GEOGRAPHY
+                      (country, state_region, city, postal_code, audit_id)
+SELECT 
+country, state_region, city, postal_code, audit_id 
+FROM 
+STAGE_GEOGRAPHY
+WHERE record_exists IS NULL 
+
+/* Cleansing Customer */
+UPDATE
+    STAGE_CUSTOMER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_CUSTOMER S, DIM_CUSTOMER D
+
+WHERE 
+
+S.customer_nk = D.customer_nk
+
+
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_CUSTOMER S, DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+
+UPDATE
+    STAGE_CUSTOMER
+SET
+    geography_wk =  0
+
+WHERE 
+
+    geography_wk IS NULL
+
+/* Loading Customer */
+INSERT INTO
+	DIM_CUSTOMER
+	(customer_nk, geography_wk, customer_name, contact_name,
+	 contact_title, address, phone, fax, audit_id)
+SELECT
+	customer_nk, geography_wk, customer_name, contact_name,
+	 contact_title, address, phone, fax, audit_id
+FROM
+	STAGE_CUSTOMER
+WHERE
+	record_exists IS NULL
+go
+
+UPDATE DIM_CUSTOMER
+
+SET
+
+customer_nk = S.customer_nk,
+geography_wk = S.geography_wk, 
+customer_name = S.customer_name, 
+contact_name = S.contact_name, 
+contact_title = S.contact_title, 
+address = S.address, 
+phone = S.phone, 
+fax = S.fax, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_CUSTOMER D, STAGE_CUSTOMER S
+
+WHERE D.customer_nk = S.customer_nk AND
+	S.record_exists = 'Y'
+go
+
+/* Cleansing Shipper */
+UPDATE
+    STAGE_SHIPPER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE
+    STAGE_SHIPPER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_SHIPPER S, DIM_SHIPPER D
+
+WHERE 
+
+S.shipper_nk = D.shipper_nk
+
+/* Loading Shipper */
+INSERT INTO
+	DIM_SHIPPER
+	(shipper_nk, shipper_name, phone, audit_id)
+SELECT
+	shipper_nk, shipper_name, phone, audit_id
+FROM
+	STAGE_SHIPPER
+WHERE
+	record_exists IS NULL
+go
+
+UPDATE DIM_SHIPPER
+
+SET
+
+shipper_nk = S.shipper_nk,
+shipper_name = S.shipper_name, 
+phone = S.phone, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_SHIPPER D, STAGE_SHIPPER S
+
+WHERE D.shipper_nk = S.shipper_nk AND
+	S.record_exists = 'Y'
+go
+
+/* Cleansing and Loading Supplier */
+UPDATE
+    STAGE_SUPPLIER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_SUPPLIER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_SUPPLIER S, DIM_SUPPLIER D
+
+WHERE 
+
+S.supplier_nk = D.supplier_nk
+
+
+
+UPDATE
+    STAGE_SUPPLIER
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_SUPPLIER S, DIM_GEOGRAPHY D
+
+WHERE 
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+UPDATE
+    STAGE_SUPPLIER
+SET
+    geography_wk =  0
+
+WHERE 
+
+   geography_wk IS NULL
+
+
+INSERT INTO
+	DIM_SUPPLIER
+	(supplier_nk, geography_wk, supplier_name, contact_name,
+	 contact_title, address, phone, fax, home_page, audit_id)
+SELECT
+	supplier_nk, geography_wk, supplier_name, contact_name,
+	 contact_title, address, phone, fax, home_page, audit_id
+FROM
+	STAGE_SUPPLIER
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_SUPPLIER
+
+SET
+
+geography_wk = S.geography_wk, 
+supplier_name = S.supplier_name, 
+contact_name = S.contact_name, 
+contact_title = S.contact_title, 
+address = S.address, 
+phone = S.phone, 
+fax = S.fax, 
+home_page = S.home_page,
+audit_id = S.audit_id
+
+FROM
+
+DIM_SUPPLIER D, STAGE_SUPPLIER S
+
+WHERE D.supplier_nk = S.supplier_nk AND
+	S.record_exists = 'Y'
+
+/* Cleansing Product */
+UPDATE
+    STAGE_PRODUCT
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE
+    STAGE_PRODUCT
+SET
+    supplier_wk =  D.supplier_wk
+
+FROM STAGE_PRODUCT S,  DIM_SUPPLIER D
+
+WHERE 
+
+    S.supplier_nk =  D.supplier_nk
+
+
+UPDATE
+    STAGE_PRODUCT
+SET
+    record_exists = 'Y'
+
+FROM STAGE_PRODUCT S, DIM_PRODUCT D
+
+WHERE 
+
+S.product_nk = D.product_nk
+
+/* Load Product */
+INSERT INTO
+	DIM_PRODUCT
+	(product_nk, supplier_wk, product_name, category_nk, category_name, quantity_per_unit, unit_price, units_in_stock, units_on_order, reorder_level, discontinued_flag, audit_id)
+
+SELECT
+	product_nk, supplier_wk, product_name, category_nk, 		category_name, quantity_per_unit, unit_price, units_in_stock, 		units_on_order, reorder_level,
+
+CASE 
+	WHEN discontinued_flag = 0
+		THEN 'Current'
+	ELSE 'Discontinued'
+END
+
+, audit_id
+
+FROM
+	STAGE_PRODUCT 
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_PRODUCT
+
+SET
+
+product_nk = S.product_nk, 
+supplier_wk = S.supplier_wk,
+product_name = S.product_name, 
+category_nk = S.category_nk,
+category_name = S.category_name, 
+quantity_per_unit = S.quantity_per_unit, 
+unit_price = S.unit_price, 
+units_in_stock = S.units_in_stock, 
+units_on_order = S.units_on_order, 
+reorder_level = S.reorder_level, 
+discontinued_flag = S.discontinued_flag, 
+audit_id = S.audit_id
+
+FROM
+
+DIM_PRODUCT D, STAGE_PRODUCT S
+
+WHERE D.product_nk = S.product_nk AND
+	S.record_exists = 'Y'
+go
+
+/* Cleanse Employee */
+UPDATE
+    STAGE_EMPLOYEE
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE
+    STAGE_EMPLOYEE
+SET
+    record_exists = 'Y'
+
+FROM STAGE_EMPLOYEE S, DIM_EMPLOYEE D
+
+WHERE 
+
+S.employee_nk = D.employee_nk
+
+
+
+
+UPDATE
+    STAGE_EMPLOYEE
+SET
+    geography_wk =  D.geography_wk
+
+FROM STAGE_EMPLOYEE S, DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ')
+
+/* Load Employee */
+ INSERT INTO
+	DIM_EMPLOYEE
+	(employee_nk, geography_wk, direct_report_wk, direct_report_nk, employee_name, 
+	 title, address, phone, birth_date, hire_date, region_nk, region_name, audit_id)
+SELECT
+	employee_nk, geography_wk, 0, direct_report_nk, employee_name, 
+	title, address, phone, birth_date, hire_date, region_nk, region_name, audit_id
+FROM
+	STAGE_EMPLOYEE
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_EMPLOYEE
+
+SET
+
+direct_report_wk = A.employee_wk
+
+FROM
+
+(SELECT employee_wk, employee_nk FROM DIM_EMPLOYEE ) A
+
+WHERE direct_report_nk = A.employee_nk  AND audit_id = 
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+
+UPDATE DIM_EMPLOYEE
+
+SET
+
+employee_nk = S.employee_nk,
+geography_wk = S.geography_wk, 
+direct_report_wk = ISNULL((SELECT employee_wk FROM DIM_EMPLOYEE WHERE employee_nk = S.direct_report_nk), 0),
+direct_report_nk = S.direct_report_nk,
+employee_name = S.employee_name, 
+title = S.title, 
+address = S.address, 
+phone = S.phone,
+birth_date = S.birth_date,
+hire_date = S.hire_date,
+region_nk = S.region_nk,
+region_name = S.region_name,
+audit_id = S.audit_id
+
+FROM
+
+DIM_EMPLOYEE D, STAGE_EMPLOYEE S
+
+WHERE D.employee_nk = S.employee_nk AND
+	S.record_exists = 'Y'
+

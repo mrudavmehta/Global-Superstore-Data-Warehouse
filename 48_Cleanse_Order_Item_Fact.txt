@@ -1,0 +1,79 @@
+UPDATE    STAGE_ORDER_ITEMS
+SET            audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE    STAGE_ORDER_ITEMS
+SET              record_exists = 
+'Y'
+FROM STAGE_ORDER_ITEMS S, FACT_ORDER_ITEMS F
+WHERE 
+
+S.order_nk = F.order_nk AND S.product_nk = F.product_nk 
+
+
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       geography_wk = D.geography_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_GEOGRAPHY D
+
+WHERE 
+
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       customer_wk = D.customer_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CUSTOMER D
+
+WHERE S.customer_nk = D.Customer_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       employee_wk = D.employee_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_EMPLOYEE D
+
+WHERE S.employee_nk = D.employee_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       order_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CALENDAR D
+
+WHERE S.order_date = D.calendar_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       required_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CALENDAR D
+
+WHERE S.required_date = D.calendar_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       shipped_date_wk = D.calendar_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_CALENDAR D
+WHERE S.shipped_date = D.calendar_nk
+
+UPDATE    STAGE_ORDER_Items
+SET       shipped_date_wk = 0
+WHERE  shipped_date_wk IS NULL
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       shipper_wk = D.shipper_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_SHIPPER D
+
+WHERE S.shipper_nk = D.shipper_nk
+
+UPDATE    STAGE_ORDER_ITEMS
+SET       product_wk = D.product_wk 
+FROM 
+STAGE_ORDER_ITEMS S,  DIM_PRODUCT D
+
+WHERE S.product_nk = D.product_nk

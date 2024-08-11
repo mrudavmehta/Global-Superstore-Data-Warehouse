@@ -1,0 +1,36 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_PRODUCT (
+	product_wk 		int 		IDENTITY,
+	product_nk		int 		NULL,
+	supplier_wk		int		NOT NULL,
+	product_name		nvarchar(80)	NOT NULL,
+	category_nk		int 		NULL,
+	category_name		nvarchar(30)	NULL,
+	quantity_per_unit	nvarchar(40)	NULL,
+	unit_price		money		NULL,
+	units_in_stock		smallint	NULL,
+	units_on_order		smallint	NULL,
+	reorder_level		smallint	NULL,
+	discontinued_flag	nvarchar(15)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_PRODUCT ON DIM_PRODUCT
+	(
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_PRODUCT_SUPPLIER_WK ON DIM_PRODUCT
+	(
+		supplier_wk
+	)
+Go
+
+ALTER TABLE DIM_PRODUCT
+	ADD PRIMARY KEY (product_wk)
+Go

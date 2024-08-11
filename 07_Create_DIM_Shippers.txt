@@ -1,0 +1,23 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_SHIPPER (
+	shipper_wk 		int 		IDENTITY,
+	shipper_nk		int 		NULL,
+	shipper_name		nvarchar(80)	NOT NULL,
+	phone			nvarchar(48)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_SHIPPER ON DIM_SHIPPER
+	(
+		shipper_nk
+	)
+Go
+
+ALTER TABLE DIM_SHIPPER
+	ADD PRIMARY KEY (shipper_wk)
+Go
+

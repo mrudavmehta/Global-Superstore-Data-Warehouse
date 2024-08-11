@@ -1,0 +1,85 @@
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_GEOGRAPHY ON
+
+INSERT INTO DIM_GEOGRAPHY 
+	( geography_wk, country, state_region, city, postal_code )
+VALUES
+	(0,'N/A', 'N/A', 'N/A', 'N/A')
+
+SET IDENTITY_INSERT DIM_GEOGRAPHY OFF
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_CUSTOMER ON
+
+INSERT INTO DIM_CUSTOMER
+	( customer_wk, customer_nk, geography_wk, customer_name )
+VALUES
+	( 0, NULL, 0, 'Unknown')
+
+SET IDENTITY_INSERT DIM_CUSTOMER OFF
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_EMPLOYEE ON
+
+INSERT INTO DIM_EMPLOYEE
+	(employee_wk, employee_nk, geography_wk, direct_report_wk, direct_report_nk, employee_name, region_nk, region_name)
+VALUES
+	(0 , NULL, 0, 0 , NULL , 'Unknown', NULL, 'Unknown' )
+
+SET IDENTITY_INSERT DIM_EMPLOYEE OFF
+
+
+
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_SHIPPER ON
+
+INSERT INTO DIM_SHIPPER
+	(shipper_wk, shipper_nk, shipper_name )
+VALUES
+	(0, NULL, 'Unknown')
+
+SET IDENTITY_INSERT DIM_SHIPPER OFF
+
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_SUPPLIER ON
+
+INSERT INTO DIM_SUPPLIER 
+	(supplier_wk, supplier_nk, geography_wk, supplier_name)
+VALUES
+	(0, NULL, 0, 'Unknown')
+
+SET IDENTITY_INSERT DIM_SUPPLIER OFF
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_PRODUCT ON
+
+INSERT INTO DIM_PRODUCT
+	( product_wk, product_nk, supplier_wk, product_name, category_nk, category_name, discontinued_flag )
+VALUES
+	( 0, NULL, 0, 'Unknown', NULL, NULL, NULL )
+
+SET IDENTITY_INSERT DIM_PRODUCT OFF	

@@ -1,0 +1,997 @@
+
+/* 01_From_Date_To_Date to 22_populate_Other_Dimensions */
+USE Northwind_DW
+Go
+
+CREATE TABLE FROM_TO_DATE (
+StartDate datetime,
+EndDate datetime)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_CALENDAR (
+	calendar_wk 	int 		NOT NULL,
+	calendar_nk	datetime	NULL,
+	full_date 	nvarchar(20)	NULL,
+	day_of_week	tinyint		NULL,
+	day_of_month	tinyint		NULL,
+	day_of_year	smallint	NULL,
+	month_num	tinyint		NULL,
+	month_ldesc	nvarchar(9)	NULL,
+	month_sdesc	nchar(3)	NULL,
+	quarter_num	tinyint		NULL,
+	quarter_ldesc	nvarchar(10)	NULL,
+	quarter_sdesc	nvarchar(10)	NULL,
+	year_num	smallint	NULL,
+	year_sdesc	nchar(4)	NULL
+)
+
+Go
+
+CREATE UNIQUE INDEX IDX_DIM_CALENDAR ON DIM_CALENDAR
+	(
+		calendar_nk
+	)
+Go
+
+ALTER TABLE DIM_CALENDAR
+	ADD PRIMARY KEY (calendar_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_CUSTOMER (
+	customer_wk 	int 		IDENTITY,
+	customer_nk	nchar(10)	NULL,
+	geography_wk	int		NOT NULL,
+	customer_name	nvarchar(80)	NOT NULL,
+	contact_name	nvarchar(60)	NULL,
+	contact_title	nvarchar(60)	NULL,
+	address 	nvarchar(120)	NULL,
+	phone		nvarchar(48)	NULL,
+	fax		nvarchar(48)	NULL,
+	audit_id	int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_CUSTOMER ON DIM_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_CUSTOMER_GEOGRAPHY_WK ON DIM_CUSTOMER
+	(
+		geography_wk
+	)
+Go
+
+ALTER TABLE DIM_CUSTOMER
+	ADD PRIMARY KEY (customer_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_EMPLOYEE (
+	employee_wk 		int 		IDENTITY,
+	employee_nk		int		NULL,
+	geography_wk		int		NOT NULL,
+	direct_report_wk	int		NOT NULL,
+	direct_report_nk	int		NULL,
+	employee_name		nvarchar(60)	NOT NULL,
+	title			nvarchar(60)	NULL,
+	address 		nvarchar(120)	NULL,
+	phone			nvarchar(48)	NULL,
+	birth_date		datetime	NULL,
+	hire_date		datetime	NULL,	
+	region_nk		int 		NULL,
+	region_name		nvarchar(100)	NOT NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_EMPLOYEE ON DIM_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_EMPLOYEE_GEOGRAPHY_WK ON DIM_EMPLOYEE
+	(
+		geography_wk
+	)
+Go
+
+CREATE INDEX IDX_DIM_EMPLOYEE_DIRECT_REPORT_WK ON DIM_EMPLOYEE
+	(
+		direct_report_wk
+	)
+Go
+
+ALTER TABLE DIM_EMPLOYEE
+	ADD PRIMARY KEY (employee_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_GEOGRAPHY (
+	geography_wk 		int 		IDENTITY,
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_DIM_GEOGRAPHY ON DIM_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+ALTER TABLE DIM_GEOGRAPHY
+	ADD PRIMARY KEY (geography_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_PRODUCT (
+	product_wk 		int 		IDENTITY,
+	product_nk		int 		NULL,
+	supplier_wk		int		NOT NULL,
+	product_name		nvarchar(80)	NOT NULL,
+	category_nk		int 		NULL,
+	category_name		nvarchar(30)	NULL,
+	quantity_per_unit	nvarchar(40)	NULL,
+	unit_price		money		NULL,
+	units_in_stock		smallint	NULL,
+	units_on_order		smallint	NULL,
+	reorder_level		smallint	NULL,
+	discontinued_flag	nvarchar(15)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_PRODUCT ON DIM_PRODUCT
+	(
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_PRODUCT_SUPPLIER_WK ON DIM_PRODUCT
+	(
+		supplier_wk
+	)
+Go
+
+ALTER TABLE DIM_PRODUCT
+	ADD PRIMARY KEY (product_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_SHIPPER (
+	shipper_wk 		int 		IDENTITY,
+	shipper_nk		int 		NULL,
+	shipper_name		nvarchar(80)	NOT NULL,
+	phone			nvarchar(48)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_SHIPPER ON DIM_SHIPPER
+	(
+		shipper_nk
+	)
+Go
+
+ALTER TABLE DIM_SHIPPER
+	ADD PRIMARY KEY (shipper_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_SUPPLIER (
+	supplier_wk 		int 		IDENTITY,
+	supplier_nk		int 		NULL,
+	geography_wk		int 		NOT NULL,
+	supplier_name		nvarchar(80)	NOT NULL,
+	contact_name		nvarchar(60)	NULL,
+	contact_title		nvarchar(60)	NULL,
+	address			nvarchar(120)	NULL,
+	phone			nvarchar(48)	NULL,
+	fax			nvarchar(48)	NULL,
+	home_page		nvarchar(255)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_SUPPLIER ON DIM_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_SUPPLIER_GEOGRAPHY_WK ON DIM_SUPPLIER
+	(
+		geography_wk
+	)
+Go
+
+
+ALTER TABLE DIM_supplier
+	ADD PRIMARY KEY (supplier_wk)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE FACT_ORDERS (
+	order_wk 		int 		IDENTITY,
+	order_nk		int 		NOT NULL,
+	customer_wk		int 		NOT NULL,
+	employee_wk		int 		NOT NULL,
+	order_date_wk		int 		NOT NULL,
+	required_date_wk	int 		NOT NULL,
+	shipped_date_wk		int 		NOT NULL,
+	ship_to_geography_wk	int 		NOT NULL,
+	shipper_wk		int 		NOT NULL,	
+	freight			money 		NOT NULL,
+	total_order_item_count	smallint	NOT NULL,
+	total_order_dollars	money		NOT NULL,
+	total_order_discount_dollars	money		NOT NULL,
+	lead_time_days		smallint	NULL,
+	internal_response_time_days	smallint	NULL,
+	external_response_time_days	smallint	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_FACT_ORDERS ON FACT_ORDERS
+	(
+		order_nk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_ORDER_DATE ON FACT_ORDERS
+	(
+		order_date_wk
+	)
+Go
+
+
+
+
+CREATE INDEX IDX_FACT_ORDERS_SHIPPER ON FACT_ORDERS
+	(
+		shipper_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_CUSTOMER ON FACT_ORDERS
+	(
+		customer_wk
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_SHIP_TO ON FACT_ORDERS
+	(
+		ship_to_geography_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_EMPLOYEE ON FACT_ORDERS
+	(
+		employee_wk
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_SHIPPED ON FACT_ORDERS
+	(
+		shipped_date_wk
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_REQUIRED ON FACT_ORDERS
+	(
+		required_date_wk
+	)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE FACT_ORDER_ITEMS (
+	order_items_wk 		int 		IDENTITY,
+	order_nk		int 		NOT NULL,
+	product_nk		int 		NOT NULL,
+	customer_wk		int 		NOT NULL,
+	employee_wk		int 		NOT NULL,
+	order_date_wk		int 		NOT NULL,
+	required_date_wk	int 		NOT NULL,
+	shipped_date_wk		int 		NOT NULL,
+	shipto_geography_wk	int 		NOT NULL,
+	shipper_wk		int 		NOT NULL,	
+	product_wk		int 		NOT NULL,
+	unit_price		money 		NOT NULL,
+	quantity		smallint	NOT NULL,
+	discount		real		NOT NULL,
+	lead_time_days		smallint	NULL,
+	internal_response_time_days	smallint	NULL,
+	external_response_time_days	smallint	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_FACT_ORDER_ITEMS ON FACT_ORDER_ITEMS
+	(
+		order_nk,
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_ORDER_DATE ON FACT_ORDER_ITEMS
+	(
+		order_date_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_SHIPTO ON FACT_ORDER_ITEMS
+	(
+		shipto_geography_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_SHIPPED ON FACT_ORDER_ITEMS
+	(
+		shipped_date_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_REQUIRED ON FACT_ORDER_ITEMS
+	(
+		required_date_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_SHIPPER ON FACT_ORDER_ITEMS
+	(
+		shipper_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_PRODUCT ON FACT_ORDER_ITEMS
+	(
+		product_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_CUSTOMER ON FACT_ORDER_ITEMS
+	(
+		customer_wk
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDER_ITEMS_EMPLOYEE ON FACT_ORDER_ITEMS
+	(
+		employee_wk
+	)
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD PRIMARY KEY (order_items_wk)
+Go
+
+USE Northwind_DW
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD PRIMARY KEY (order_wk)
+Go
+
+ALTER TABLE DIM_CUSTOMER
+	ADD FOREIGN KEY (geography_wk) REFERENCES DIM_GEOGRAPHY
+Go
+
+ALTER TABLE DIM_EMPLOYEE
+	ADD FOREIGN KEY (geography_wk) REFERENCES DIM_GEOGRAPHY
+Go
+
+ALTER TABLE DIM_EMPLOYEE
+	ADD FOREIGN KEY (direct_report_wk) REFERENCES DIM_EMPLOYEE
+Go
+
+ALTER TABLE DIM_PRODUCT
+	ADD FOREIGN KEY (supplier_wk) REFERENCES DIM_SUPPLIER
+Go
+
+ALTER TABLE DIM_SUPPLIER
+	ADD FOREIGN KEY (geography_wk) REFERENCES DIM_GEOGRAPHY
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (required_date_wk) REFERENCES DIM_CALENDAR
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (shipped_date_wk) REFERENCES DIM_CALENDAR
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (shipto_geography_wk) REFERENCES DIM_GEOGRAPHY
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (employee_wk) REFERENCES DIM_EMPLOYEE
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (customer_wk) REFERENCES DIM_CUSTOMER
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (product_wk) REFERENCES DIM_PRODUCT
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (shipper_wk) REFERENCES DIM_SHIPPER
+Go
+
+ALTER TABLE FACT_ORDER_ITEMS
+	ADD FOREIGN KEY (order_date_wk) REFERENCES DIM_CALENDAR
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (required_date_wk) REFERENCES DIM_CALENDAR
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (shipped_date_wk) REFERENCES DIM_CALENDAR
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (employee_wk) REFERENCES DIM_EMPLOYEE
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (ship_to_geography_wk) REFERENCES DIM_GEOGRAPHY
+Go
+
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (customer_wk) REFERENCES DIM_CUSTOMER
+Go
+
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (shipper_wk) REFERENCES DIM_SHIPPER
+Go
+
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (order_date_wk) REFERENCES DIM_CALENDAR
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_CUSTOMER (
+	customer_nk	nchar(10)	NOT NULL,
+	customer_name	nvarchar(80)	NULL,
+	contact_name	nvarchar(60)	NULL,
+	contact_title	nvarchar(60)	NULL,
+	address 	nvarchar(120)	NULL,
+	geography_wk	int		NULL,
+	country		nvarchar(30)	NULL,
+	state_region	nvarchar(30)	NULL,
+	city		nvarchar(30)	NULL,
+	postal_code	nvarchar(20)	NULL,
+	phone		nvarchar(48)	NULL,
+	fax		nvarchar(48)	NULL,
+	record_exists	char(1)		NULL,
+	audit_id	int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_CUSTOMER ON STAGE_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_CUSTOMER_GEOGRAPHY ON STAGE_CUSTOMER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_EMPLOYEE (
+	employee_nk		int		NOT NULL,
+	direct_report_nk	int		NULL,
+	employee_name		nvarchar(60)	NULL,
+	title			nvarchar(60)	NULL,
+	address 		nvarchar(120)	NULL,
+	geography_wk		int		NULL,
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	phone			nvarchar(48)	NULL,
+	birth_date		datetime	NULL,
+	hire_date		datetime	NULL,	
+	region_nk		int 		NULL,
+	region_name		nvarchar(100)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_EMPLOYEE ON STAGE_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE_GEOGRAPHY ON STAGE_EMPLOYEE
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_GEOGRAPHY (
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_GEOGRAPHY ON STAGE_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_PRODUCT (
+	product_nk		int 		NOT NULL,
+	supplier_nk		int		NULL,
+	supplier_wk		int		NULL,
+	category_nk		int		NULL,
+	product_name		nvarchar(80)	NULL,
+	category_name		nvarchar(30)	NULL,
+	quantity_per_unit	nvarchar(40)	NULL,
+	unit_price		money		NULL,
+	units_in_stock		smallint	NULL,
+	units_on_order		smallint	NULL,
+	reorder_level		smallint	NULL,
+	discontinued_flag	tinyint 	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_PRODUCT ON STAGE_PRODUCT
+	(
+		product_nk
+	)
+Go
+
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_SHIPPER (
+	shipper_nk		int 		NOT NULL,
+	shipper_name		nvarchar(80)	NULL,
+	phone			nvarchar(48)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_SHIPPER ON STAGE_SHIPPER
+	(
+		shipper_nk
+	)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_SUPPLIER (
+	supplier_nk			int 		NOT NULL,
+	supplier_name			nvarchar(80)	NULL,
+	contact_name			nvarchar(60)	NULL,
+	contact_title			nvarchar(60)	NULL,
+	address				nvarchar(120)	NULL,
+	geography_wk			int 		NULL,
+	country				nvarchar(30)	NULL,
+	state_region			nvarchar(30)	NULL,
+	city				nvarchar(30)	NULL,
+	postal_code			nvarchar(20)	NULL,
+	phone				nvarchar(48)	NULL,
+	fax				nvarchar(48)	NULL,
+	home_page			ntext		NULL,
+	record_exists			char(1)		NULL,
+	audit_id			int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_SUPPLIER ON STAGE_SUPPLIER
+	(
+		supplier_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_SUPPLIER_GEOGRAPHY ON STAGE_SUPPLIER
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+USE Northwind_DW
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_ORDERS (
+	order_nk			int 		NOT NULL,
+	customer_nk			nchar(10)	NOT NULL,
+	employee_nk			int 		NULL,
+	order_date			datetime	NULL,
+	required_date			datetime	NULL,
+	shipped_date			datetime	NULL,
+	lead_time_days			smallint	NULL,
+	internal_response_time_days	smallint	NULL,
+	external_response_time_days	smallint	NULL,
+	shipper_nk			int 		NULL,	
+	freight				money 		NULL,
+	total_order_item_count		smallint	NULL,
+	total_order_dollars		money		NULL,
+	total_order_discount_dollars	money		NULL,
+	geography_wk			int 		NULL,
+	customer_wk			int 		NULL,
+	employee_wk			int 		NULL,
+	order_date_wk			int 		NULL,			required_date_wk		int 		NULL,
+	shipped_date_wk			int 		NULL, 			shipper_wk			int 		NULL,
+	country				nvarchar(30)	NULL,
+	state_region			nvarchar(30)	NULL,
+	city				nvarchar(30)	NULL,
+	postal_code			nvarchar(20)	NULL,
+	record_exists			char(1)		NULL,
+	audit_id			int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_STAGE_ORDERS ON STAGE_ORDERS
+	(
+		order_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDERS_GEOGRAPHY ON STAGE_ORDERS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_ORDER_ITEMS (
+	order_nk		int 		NOT NULL,
+	product_nk		int 		NOT NULL,
+	customer_nk		nchar(10)	NULL,
+	employee_nk		int 		NULL,
+	order_date		datetime	NULL,
+	required_date		datetime	NULL,
+	shipped_date		datetime	NULL,
+	lead_time_days		smallint	NULL,
+	internal_response_time_days	smallint	NULL,
+	external_response_time_days	smallint	NULL,
+	shipper_nk		int 		NULL,			
+	unit_price		money 		NOT NULL,
+	quantity		smallint	NOT NULL,
+	discount		real		NOT NULL,
+	geography_wk		int 		NULL,
+	customer_wk		int 		NULL,
+	employee_wk		int 		NULL,
+	order_date_wk		int 		NULL,				required_date_wk	int 		NULL,
+	shipped_date_wk		int 		NULL, 				shipper_wk		int 		NULL,
+	product_wk		int 		NULL,
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS ON STAGE_ORDER_ITEMS
+	(
+		order_nk,
+		product_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_ORDER_ITEMS_GEOGRAPHY ON STAGE_ORDER_ITEMS
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+
+CREATE TABLE AUDIT_JOB (
+	audit_id	int		IDENTITY,
+	job_name	nvarchar(100)	NULL,
+	job_status	nvarchar(2000)	NULL,
+	job_start_dt	datetime	NULL,
+	job_end_dt	datetime	NULL,
+	post_start_dt	datetime	NULL,
+	post_end_dt	datetime	NULL,
+
+)
+
+GO
+
+CREATE INDEX AUDIT_JOB_JOB_NAME ON AUDIT_JOB
+	(
+		job_name
+	)
+Go
+
+
+ALTER TABLE AUDIT_JOB
+	ADD PRIMARY KEY (audit_id)
+go
+
+USE Northwind_DW
+Go
+
+CREATE TABLE AUDIT_TASK (
+	task_id			int		IDENTITY,
+	audit_id		int		NOT NULL,
+	package_name		nvarchar(100)	NULL,
+	task_name		nvarchar(100)	NULL,
+	task_status		nvarchar(2000)	NULL,
+	task_start_dt		datetime	NULL,	
+	task_end_dt		datetime	NULL,	
+	records_processed	int 		NULL
+)
+
+GO
+
+CREATE INDEX AUDIT_TASK_AUDIT_ID ON AUDIT_TASK
+	(
+		audit_id
+	)
+Go
+
+ALTER TABLE AUDIT_TASK
+	ADD PRIMARY KEY (task_id)
+go
+
+USE Northwind_DW
+Go
+
+ALTER TABLE AUDIT_TASK
+	ADD FOREIGN KEY (audit_id) REFERENCES AUDIT_JOB
+go
+
+USE Northwind_DW
+Go
+
+INSERT INTO DIM_CALENDAR
+	(calendar_wk, calendar_nk, full_date, month_ldesc, month_sdesc, quarter_ldesc, quarter_sdesc, year_sdesc)
+	VALUES
+	(0, NULL, 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A')
+
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+declare @dtCurrDate datetime
+
+SELECT @dtStartDate = '1/1/1995'
+SELECT @dtEndDate = '12/31/2001'
+
+SELECT @dtCurrDate = DATEADD(d,1, MAX(calendar_nk))
+FROM DIM_CALENDAR
+WHERE calendar_nk IS NOT NULL
+
+SELECT @dtCurrDate = ISNULL(@dtCurrDate, @dtStartDate)
+
+WHILE @dtCurrDate <= @dtEndDate
+BEGIN
+
+INSERT INTO DIM_CALENDAR
+	(
+	calendar_wk, 
+	calendar_nk, 
+	full_date, 
+	day_of_week,
+	day_of_month,
+	day_of_year,
+	month_num,
+	month_ldesc, 
+	month_sdesc, 
+	quarter_num, 
+	quarter_ldesc, 
+	quarter_sdesc, 
+	year_num,
+	year_sdesc)
+	
+VALUES
+
+	(
+	CONVERT(int, CONVERT(char(8), @dtCurrDate, 112)),
+	@dtCurrDate,
+	DATENAME(month, @dtCurrDate) + ' ' + CONVERT(nvarchar(2), DAY(@dtCurrDate)) + ', ' +  CONVERT(char(4), YEAR(@dtCurrDate)),
+	DATEPART(dw, @dtCurrDate),
+	DATEPART(d, @dtCurrDate),
+	DATEPART(dy, @dtCurrDate),
+	DATEPART(m, @dtCurrDate),
+	SUBSTRING (DATENAME(m, @dtCurrDate),1,3) + ' ' + CONVERT(char(4), YEAR(@dtCurrDate)),
+	SUBSTRING (DATENAME(m, @dtCurrDate),1,3),
+	DATEPART(qq, @dtCurrDate), 
+	'Q' + CONVERT(char(1), DATEPART(qq,@dtCurrDate))+ ' ' + CONVERT(char(4), YEAR(@dtCurrDate)),
+	'Q' + CONVERT(char(1), DATEPART(qq,@dtCurrDate)),
+	YEAR(@dtCurrDate), 
+	CONVERT(char(4), YEAR(@dtCurrDate))
+	)
+
+SELECT @dtCurrDate  = DATEADD(d,1,@dtCurrDate)
+
+END
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_GEOGRAPHY ON
+
+INSERT INTO DIM_GEOGRAPHY 
+	( geography_wk, country, state_region, city, postal_code )
+VALUES
+	(0,'N/A', 'N/A', 'N/A', 'N/A')
+
+SET IDENTITY_INSERT DIM_GEOGRAPHY OFF
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_CUSTOMER ON
+
+INSERT INTO DIM_CUSTOMER
+	( customer_wk, customer_nk, geography_wk, customer_name )
+VALUES
+	( 0, NULL, 0, 'Unknown')
+
+SET IDENTITY_INSERT DIM_CUSTOMER OFF
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_EMPLOYEE ON
+
+INSERT INTO DIM_EMPLOYEE
+	(employee_wk, employee_nk, geography_wk, direct_report_wk, direct_report_nk, employee_name, region_nk, region_name)
+VALUES
+	(0 , NULL, 0, 0 , NULL , 'Unknown', NULL, 'Unknown' )
+
+SET IDENTITY_INSERT DIM_EMPLOYEE OFF
+
+
+
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_SHIPPER ON
+
+INSERT INTO DIM_SHIPPER
+	(shipper_wk, shipper_nk, shipper_name )
+VALUES
+	(0, NULL, 'Unknown')
+
+SET IDENTITY_INSERT DIM_SHIPPER OFF
+
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_SUPPLIER ON
+
+INSERT INTO DIM_SUPPLIER 
+	(supplier_wk, supplier_nk, geography_wk, supplier_name)
+VALUES
+	(0, NULL, 0, 'Unknown')
+
+SET IDENTITY_INSERT DIM_SUPPLIER OFF
+
+-------------------------------------------------------------------
+
+USE Northwind_DW
+Go
+
+SET IDENTITY_INSERT DIM_PRODUCT ON
+
+INSERT INTO DIM_PRODUCT
+	( product_wk, product_nk, supplier_wk, product_name, category_nk, category_name, discontinued_flag )
+VALUES
+	( 0, NULL, 0, 'Unknown', NULL, NULL, NULL )
+
+SET IDENTITY_INSERT DIM_PRODUCT OFF	
+-------------------------------------------------------------------------------
+ 

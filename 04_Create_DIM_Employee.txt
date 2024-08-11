@@ -1,0 +1,44 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_EMPLOYEE (
+	employee_wk 		int 		IDENTITY,
+	employee_nk		int		NULL,
+	geography_wk		int		NOT NULL,
+	direct_report_wk	int		NOT NULL,
+	direct_report_nk	int		NULL,
+	employee_name		nvarchar(60)	NOT NULL,
+	title			nvarchar(60)	NULL,
+	address 		nvarchar(120)	NULL,
+	phone			nvarchar(48)	NULL,
+	birth_date		datetime	NULL,
+	hire_date		datetime	NULL,	
+	region_nk		int 		NULL,
+	region_name		nvarchar(100)	NOT NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_EMPLOYEE ON DIM_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_EMPLOYEE_GEOGRAPHY_WK ON DIM_EMPLOYEE
+	(
+		geography_wk
+	)
+Go
+
+CREATE INDEX IDX_DIM_EMPLOYEE_DIRECT_REPORT_WK ON DIM_EMPLOYEE
+	(
+		direct_report_wk
+	)
+Go
+
+ALTER TABLE DIM_EMPLOYEE
+	ADD PRIMARY KEY (employee_wk)
+Go
+

@@ -1,0 +1,27 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_GEOGRAPHY (
+	geography_wk 		int 		IDENTITY,
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_DIM_GEOGRAPHY ON DIM_GEOGRAPHY
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+Go
+
+
+ALTER TABLE DIM_GEOGRAPHY
+	ADD PRIMARY KEY (geography_wk)
+Go

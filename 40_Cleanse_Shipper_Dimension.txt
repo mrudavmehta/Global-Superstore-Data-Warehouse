@@ -1,0 +1,16 @@
+UPDATE
+    STAGE_SHIPPER
+SET audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+UPDATE
+    STAGE_SHIPPER
+SET
+    record_exists = 'Y'
+
+FROM STAGE_SHIPPER S, DIM_SHIPPER D
+
+WHERE 
+
+S.shipper_nk = D.shipper_nk

@@ -1,0 +1,54 @@
+ INSERT INTO
+	DIM_EMPLOYEE
+	(employee_nk, geography_wk, direct_report_wk, direct_report_nk, employee_name, 
+	 title, address, phone, birth_date, hire_date, region_nk, region_name, audit_id)
+SELECT
+	employee_nk, geography_wk, 0, direct_report_nk, employee_name, 
+	title, address, phone, birth_date, hire_date, region_nk, region_name, audit_id
+FROM
+	STAGE_EMPLOYEE
+WHERE
+	record_exists IS NULL
+
+
+
+UPDATE DIM_EMPLOYEE
+
+SET
+
+direct_report_wk = A.employee_wk
+
+FROM
+
+(SELECT employee_wk, employee_nk FROM DIM_EMPLOYEE ) A
+
+WHERE direct_report_nk = A.employee_nk  AND audit_id = 
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+
+UPDATE DIM_EMPLOYEE
+
+SET
+
+employee_nk = S.employee_nk,
+geography_wk = S.geography_wk, 
+direct_report_wk = ISNULL((SELECT employee_wk FROM DIM_EMPLOYEE WHERE employee_nk = S.direct_report_nk), 0),
+direct_report_nk = S.direct_report_nk,
+employee_name = S.employee_name, 
+title = S.title, 
+address = S.address, 
+phone = S.phone,
+birth_date = S.birth_date,
+hire_date = S.hire_date,
+region_nk = S.region_nk,
+region_name = S.region_name,
+audit_id = S.audit_id
+
+FROM
+
+DIM_EMPLOYEE D, STAGE_EMPLOYEE S
+
+WHERE D.employee_nk = S.employee_nk AND
+	S.record_exists = 'Y'

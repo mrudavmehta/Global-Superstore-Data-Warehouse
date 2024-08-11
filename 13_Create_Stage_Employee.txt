@@ -1,0 +1,40 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE STAGE_EMPLOYEE (
+	employee_nk		int		NOT NULL,
+	direct_report_nk	int		NULL,
+	employee_name		nvarchar(60)	NULL,
+	title			nvarchar(60)	NULL,
+	address 		nvarchar(120)	NULL,
+	geography_wk		int		NULL,
+	country			nvarchar(30)	NULL,
+	state_region		nvarchar(30)	NULL,
+	city			nvarchar(30)	NULL,
+	postal_code		nvarchar(20)	NULL,
+	phone			nvarchar(48)	NULL,
+	birth_date		datetime	NULL,
+	hire_date		datetime	NULL,	
+	region_nk		int 		NULL,
+	region_name		nvarchar(100)	NULL,
+	record_exists		char(1)		NULL,
+	audit_id		int		NULL
+)
+
+GO
+
+CREATE INDEX IDX_STAGE_EMPLOYEE ON STAGE_EMPLOYEE
+	(
+		employee_nk
+	)
+Go
+
+CREATE INDEX IDX_STAGE_EMPLOYEE_GEOGRAPHY ON STAGE_EMPLOYEE
+	(
+		country,
+		state_region,
+		city,
+		postal_code
+	)
+
+Go

@@ -1,0 +1,26 @@
+Use Northwind
+Go
+
+/* Populating Stage_Geography */
+
+Insert into  Northwind_DW.dbo.Stage_Geography(country,state_region,city,postal_code) 
+
+SELECT country, Region, city, postalcode
+FROM customers
+
+UNION
+
+SELECT country, Region, city, postalcode
+FROM suppliers
+
+UNION
+
+SELECT country, Region, city, postalcode
+FROM employees
+
+UNION
+
+SELECT shipcountry, shipregion, shipcity, shippostalcode
+FROM orders
+  
+ 

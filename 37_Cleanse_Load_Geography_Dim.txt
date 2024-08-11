@@ -1,0 +1,27 @@
+Use Northwind_DW
+Go
+
+UPDATE    STAGE_GEOGRAPHY
+SET              audit_id  = 
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+
+
+UPDATE    STAGE_GEOGRAPHY
+SET              record_exists = 
+'Y'
+FROM STAGE_GEOGRAPHY S, DIM_GEOGRAPHY D
+WHERE 
+ISNULL(S.country, ' ') = ISNULL(D.country, ' ')  AND
+ISNULL(S.state_region, ' ') = ISNULL(D.state_region, ' ')  AND
+ISNULL(S.city, ' ') = ISNULL(D.city, ' ')  AND
+ISNULL(S.postal_code, ' ') = ISNULL(D.postal_code, ' ') 
+
+
+INSERT INTO DIM_GEOGRAPHY
+                      (country, state_region, city, postal_code, audit_id)
+SELECT 
+country, state_region, city, postal_code, audit_id 
+FROM 
+STAGE_GEOGRAPHY
+WHERE record_exists IS NULL 

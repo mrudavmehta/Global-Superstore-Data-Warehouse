@@ -1,0 +1,33 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE DIM_CUSTOMER (
+	customer_wk 	int 		IDENTITY,
+	customer_nk	nchar(10)	NULL,
+	geography_wk	int		NOT NULL,
+	customer_name	nvarchar(80)	NOT NULL,
+	contact_name	nvarchar(60)	NULL,
+	contact_title	nvarchar(60)	NULL,
+	address 	nvarchar(120)	NULL,
+	phone		nvarchar(48)	NULL,
+	fax		nvarchar(48)	NULL,
+	audit_id	int		NULL
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_CUSTOMER ON DIM_CUSTOMER
+	(
+		customer_nk
+	)
+Go
+
+CREATE INDEX IDX_DIM_CUSTOMER_GEOGRAPHY_WK ON DIM_CUSTOMER
+	(
+		geography_wk
+	)
+Go
+
+ALTER TABLE DIM_CUSTOMER
+	ADD PRIMARY KEY (customer_wk)
+Go

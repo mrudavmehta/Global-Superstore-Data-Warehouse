@@ -1,0 +1,330 @@
+-- Create dim calender --
+USE Group3DW 
+Go
+
+CREATE TABLE DIM_CALENDAR (
+	calendar_wk 	int 		NOT NULL,
+	calendar_nk	datetime	NULL,
+	full_date 	nvarchar(20)	NULL,
+	day_of_week	tinyint		NULL,
+	day_of_month	tinyint		NULL,
+	day_of_year	smallint	NULL,
+	month_num	tinyint		NULL,
+	month_ldesc	nvarchar(9)	NULL,
+	month_sdesc	nchar(3)	NULL,
+	quarter_num	tinyint		NULL,
+	quarter_ldesc	nvarchar(10)	NULL,
+	quarter_sdesc	nvarchar(10)	NULL,
+	year_num	smallint	NULL,
+	year_sdesc	nchar(4)	NULL
+)
+
+Go
+
+CREATE UNIQUE INDEX IDX_DIM_CALENDAR ON DIM_CALENDAR
+	(
+		calendar_nk
+	)
+Go
+
+ALTER TABLE DIM_CALENDAR
+	ADD PRIMARY KEY (calendar_wk)
+Go
+
+-- Create dim customer --
+USE Group3DW
+Go
+
+CREATE TABLE DIM_CUSTOMER (
+	C_WK 				int 			IDENTITY,
+	Customer_ID			nvarchar(30) 			NULL,
+	Customer_Name 			nvarchar(80)	NOT NULL,
+	Segment		nvarchar(30)	NULL,
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_CUSTOMER ON DIM_CUSTOMER
+	(
+		Customer_ID
+	)
+Go
+
+ALTER TABLE DIM_CUSTOMER
+	ADD PRIMARY KEY (C_WK)
+Go
+
+-- Create dim location --
+
+USE Group3DW
+Go
+
+CREATE TABLE DIM_LOCATION (
+	Loc_wk 		int 			IDENTITY,
+	City			nvarchar(30)	NULL,	
+	State		nvarchar(30)	NULL,
+	Country		nvarchar(30)	NULL,
+)
+
+GO
+
+CREATE INDEX IDX_DIM_LOCATION ON DIM_LOCATION
+	(
+		
+		City,
+		State,
+		Country
+	)
+Go
+
+
+ALTER TABLE DIM_LOCATION
+	ADD PRIMARY KEY (Loc_wk)
+Go
+
+-- Create dim order--
+USE Group3DW
+Go
+
+CREATE TABLE DIM_ORDER (
+	Order_wk 		int 			IDENTITY,
+	Order_ID		nvarchar(30)			NULL,
+	Ship_Mode 		nvarchar(80)	NOT NULL,
+	Ship_date		 date		NOT NULL,
+	Order_date	 	date		NOT NULL,
+	Order_Priority		nvarchar(30)	NULL,
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_ORDER ON DIM_ORDER
+	(
+		Order_ID,Ship_Mode,Order_Priority,Ship_date,Order_date
+	)
+Go
+
+ALTER TABLE DIM_ORDER
+	ADD PRIMARY KEY (Order_wk)
+Go
+
+-- Create dim product --
+USE Group3DW
+Go
+
+CREATE TABLE DIM_PRODUCT (
+	Product_wk 		int 			IDENTITY,
+	Product_ID		nchar(30) 			NULL,
+	Product_name	nvarchar(200)	NOT NULL,
+	Category		nvarchar(100)	NULL,
+	Sub_Category	nvarchar(100)	NULL,
+)
+
+GO
+
+CREATE UNIQUE INDEX IDX_DIM_PRODUCT ON DIM_PRODUCT
+	(
+		Product_ID	, Product_name,  Category,	Sub_Category
+	)
+Go
+
+ALTER TABLE DIM_PRODUCT
+	ADD PRIMARY KEY (product_wk)
+Go
+
+
+USE Group3DW
+Go
+
+CREATE TABLE FACT_ORDERS (
+	Loc_WK 				int 		 NULL,
+	C_WK				int 		 NULL,
+	Prod_WK				int 		 NULL,
+	Order_WK			int 		 NULL,
+	Shipping_Cost		float 		 NULL,
+	Profit				float 		 NULL,
+	Discount			float 		 NULL,
+	Quantity			int 		 NULL,
+	Sales				float 		 NULL,
+	Order_Dt_WK			int			 NULL,
+	Ship_Dt_WK			int			 NULL,
+	Response 			int 	 NULL,
+)
+
+GO
+
+
+CREATE INDEX IDX_FACT_ORDERS_LOCATION ON FACT_ORDERS
+	(
+		Loc_WK
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_CUSTOMER ON FACT_ORDERS
+	(
+		C_WK
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_PRODUCT ON FACT_ORDERS
+	(
+		Prod_WK
+	)
+Go
+
+
+CREATE INDEX IDX_FACT_ORDERS_ORDER ON FACT_ORDERS
+	(
+		Order_WK
+	)
+Go
+
+CREATE INDEX IDX_FACT_ORDERS_DATE ON FACT_ORDERS
+	(
+		Order_Dt_WK
+	)
+Go
+
+CREATE INDEX IDX_FACT_SHIP_DATE ON FACT_ORDERS
+	(
+		Ship_Dt_WK
+	)
+Go
+
+
+/*Alter Table Fact_Order*/
+USE Group3DW
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (Prod_wk) REFERENCES DIM_Product
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (Order_wk) REFERENCES DIM_Order
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (Loc_wk) REFERENCES DIM_Location
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (C_wk) REFERENCES DIM_Customer
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (Order_DT_wk) REFERENCES DIM_CALENDAR
+Go
+
+ALTER TABLE FACT_ORDERS
+	ADD FOREIGN KEY (Ship_DT_wk) REFERENCES DIM_CALENDAR
+Go
+
+
+
+
+/*INSERT INTO DIM_CALENDAR*/
+USE  Group3DW
+Go
+
+INSERT INTO DIM_CALENDAR
+	(calendar_wk, calendar_nk, full_date, month_ldesc, month_sdesc, quarter_ldesc, quarter_sdesc, year_sdesc)
+	VALUES
+	(0, NULL, 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A')
+
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+declare @dtCurrDate datetime
+
+SELECT @dtStartDate = '1/1/2011'
+SELECT @dtEndDate = '12/31/2015'
+
+SELECT @dtCurrDate = DATEADD(d,1, MAX(calendar_nk))
+FROM DIM_CALENDAR
+WHERE calendar_nk IS NOT NULL
+
+SELECT @dtCurrDate = ISNULL(@dtCurrDate, @dtStartDate)
+
+WHILE @dtCurrDate <= @dtEndDate
+BEGIN
+
+INSERT INTO DIM_CALENDAR
+	(
+	calendar_wk, 
+	calendar_nk, 
+	full_date, 
+	day_of_week,
+	day_of_month,
+	day_of_year,
+	month_num,
+	month_ldesc, 
+	month_sdesc, 
+	quarter_num, 
+	quarter_ldesc, 
+	quarter_sdesc, 
+	year_num,
+	year_sdesc)
+	
+VALUES
+
+	(
+	CONVERT(int, CONVERT(char(8), @dtCurrDate, 112)),
+	@dtCurrDate,
+	DATENAME(month, @dtCurrDate) + ' ' + CONVERT(nvarchar(2), DAY(@dtCurrDate)) + ', ' +  CONVERT(char(4), YEAR(@dtCurrDate)),
+	DATEPART(dw, @dtCurrDate),
+	DATEPART(d, @dtCurrDate),
+	DATEPART(dy, @dtCurrDate),
+	DATEPART(m, @dtCurrDate),
+	SUBSTRING (DATENAME(m, @dtCurrDate),1,3) + ' ' + CONVERT(char(4), YEAR(@dtCurrDate)),
+	SUBSTRING (DATENAME(m, @dtCurrDate),1,3),
+	DATEPART(qq, @dtCurrDate), 
+	'Q' + CONVERT(char(1), DATEPART(qq,@dtCurrDate))+ ' ' + CONVERT(char(4), YEAR(@dtCurrDate)),
+	'Q' + CONVERT(char(1), DATEPART(qq,@dtCurrDate)),
+	YEAR(@dtCurrDate), 
+	CONVERT(char(4), YEAR(@dtCurrDate))
+	)
+
+SELECT @dtCurrDate  = DATEADD(d,1,@dtCurrDate)
+
+END
+
+/*CREATE TABLE STAGE_ORDERS */
+USE Group3DW
+Go
+
+CREATE TABLE STAGE_ORDERS (
+	OrderID			nchar(30) 	NULL,
+	CustomerID		nchar(30)		 NULL,
+	ProductID		nchar(30)		NULL,
+	City	    		nchar(30)		NULL,
+	State 	    		nchar(30)	NULL,
+	Country     		nchar(30)   	NULL, 
+	OrderDate		datetime		NULL,
+	ShipDate		datetime		NULL,
+	Sales			float 		NULL,
+	Quantity		int			NULL,
+	Discount        	float 		NULL,
+	Profit			float 		NULL,
+	ShippingCost		float 		NULL,
+	Response		 int		NULL,
+	CustomerName	nvarchar(80)	NULL,
+	Segment         nvarchar(80)   	NULL,
+	ShipMode       nchar(30)		NULL,
+	OrderPriority  nchar(30)   		NULL,
+	Category	nchar(100)	NULL,
+	Sub_Category 	nchar(100)  	NULL,
+	ProductName	nvarchar(200)		NULL,
+	Loc_WK 				int 		 NULL,
+	C_WK				int 			 NULL,
+	Prod_WK				int 		 NULL,
+	Order_WK			int			null,
+	Order_Dt_WK			int			null,
+	Ship_Dt_WK			int			null,
+	Record_Location_Exists	Char(1)	Default 'N',
+	Record_Product_Exists	Char(1) Default 'N',
+	Record_Order_Exists	Char(1) Default 'N',
+	Record_Customer_Exists	Char(1) Default 'N'
+
+)
+
+Go

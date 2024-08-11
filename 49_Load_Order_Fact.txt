@@ -1,0 +1,20 @@
+
+	UPDATE FACT_ORDERS 
+	SET lead_time_days = S.lead_time_days, 
+	internal_response_time_days = S.internal_response_time_days,
+	external_response_time_days = S.external_response_time_days
+
+	 FROM STAGE_ORDERS S, FACT_ORDERS F
+	 WHERE S.order_nk = F.order_nk AND S.record_exists = 'Y'
+
+	INSERT INTO FACT_ORDERS
+	(order_nk,customer_wk, employee_wk, order_date_wk,
+	required_date_wk, shipped_date_wk, ship_to_geography_wk,
+	shipper_wk, freight, total_order_item_count, total_order_dollars, 	total_order_discount_dollars,lead_time_days,internal_response_time_days, 
+	external_response_time_days, audit_id)
+	
+	SELECT order_nk,customer_wk, employee_wk, order_date_wk,
+	required_date_wk, shipped_date_wk, geography_wk,
+	shipper_wk, freight, total_order_item_count, total_order_dollars, 	total_order_discount_dollars,lead_time_days,internal_response_time_days, 
+	external_response_time_days,  audit_id
+	FROM STAGE_ORDERS WHERE record_exists IS NULL 

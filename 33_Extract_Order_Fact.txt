@@ -1,0 +1,36 @@
+Use Northwind
+Go
+
+declare @dtStartDate datetime
+declare @dtEndDate datetime
+
+SELECT @dtStartDate = (SELECT StartDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+SELECT @dtEndDate =  (SELECT EndDate FROM Northwind_DW.dbo.FROM_TO_DATE)
+
+/* Populating Stage_ORDERS */
+
+Insert into  Northwind_DW.dbo.Stage_ORDERS(order_nk,employee_nk,customer_nk,shipper_nk,order_date,required_date,
+shipped_date,lead_time_days,internal_response_time_days,
+external_response_time_days,freight,
+total_order_item_count,total_order_dollars,total_order_discount_dollars,city, state_region, postal_code, country)
+
+SELECT     O.OrderID, EmployeeID, CustomerID, ShipVia, OrderDate, RequiredDate, ShippedDate, 
+	DATEDIFF(dd, OrderDate, RequiredDate) AS lead_time_days,
+	DATEDIFF(dd, OrderDate, ShippedDate) AS internal_response_time_days,
+	DATEDIFF(dd, ShippedDate, RequiredDate) AS external_response_time_days,
+	Freight,
+	SUM(OD.Quantity) AS total_order_item_count, 
+	SUM((OD.Quantity * OD.UnitPrice) - ((OD.Quantity * OD.UnitPrice) * OD.Discount)) AS total_order_dollars,
+	SUM((OD.Quantity * OD.UnitPrice) * OD.Discount) AS total_order_discount_dollars,
+         ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+FROM         Orders O INNER JOIN
+             "Order Details" OD ON O.OrderID = OD.OrderID
+WHERE (O.OrderDate BETWEEN @dtStartDate AND @dtEndDate)
+	OR
+	(O.ShippedDate BETWEEN @dtStartDate AND @dtEndDate)
+
+
+GROUP BY
+O.OrderID, EmployeeID, CustomerID, ShipVia, OrderDate, RequiredDate, ShippedDate, Freight,
+        ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+

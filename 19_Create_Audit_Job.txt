@@ -1,0 +1,26 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE AUDIT_JOB (
+	audit_id	int		IDENTITY,
+	job_name	nvarchar(100)	NULL,
+	job_status	nvarchar(2000)	NULL,
+	job_start_dt	datetime	NULL,
+	job_end_dt	datetime	NULL,
+	post_start_dt	datetime	NULL,
+	post_end_dt	datetime	NULL,
+
+)
+
+GO
+
+CREATE INDEX AUDIT_JOB_JOB_NAME ON AUDIT_JOB
+	(
+		job_name
+	)
+Go
+
+
+ALTER TABLE AUDIT_JOB
+	ADD PRIMARY KEY (audit_id)
+go

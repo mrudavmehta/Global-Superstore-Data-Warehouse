@@ -1,0 +1,32 @@
+USE Northwind_DW
+Go
+
+CREATE TABLE AUDIT_TASK (
+	task_id			int		IDENTITY,
+	audit_id		int		NOT NULL,
+	package_name		nvarchar(100)	NULL,
+	task_name		nvarchar(100)	NULL,
+	task_status		nvarchar(2000)	NULL,
+	task_start_dt		datetime	NULL,	
+	task_end_dt		datetime	NULL,	
+	records_processed	int 		NULL
+)
+
+GO
+
+CREATE INDEX AUDIT_TASK_AUDIT_ID ON AUDIT_TASK
+	(
+		audit_id
+	)
+Go
+
+ALTER TABLE AUDIT_TASK
+	ADD PRIMARY KEY (task_id)
+go
+
+USE Northwind_DW
+Go
+
+ALTER TABLE AUDIT_TASK
+	ADD FOREIGN KEY (audit_id) REFERENCES AUDIT_JOB
+go

@@ -1,0 +1,6 @@
+ 
+
+UPDATE AUDIT_JOB SET job_status = 'completed', job_end_dt = GETDATE() WHERE audit_id =  
+(SELECT MAX (audit_id)   
+FROM AUDIT_JOB)
+ 
